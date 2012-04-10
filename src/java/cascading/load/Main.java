@@ -120,6 +120,13 @@ public class Main
     if( options.isOuterJoin() )
       flows.add( new OnlyOuterJoin( options, getDefaultProperties() ).createFlow() );
 
+    if( options.isWriteDotFile() )
+      for( Flow flow : flows ) {
+        String file_name = flow.getName() + ".dot";
+        LOG.info( "DOT file: " + file_name );
+        flow.writeDOT( file_name );
+      }
+
     Cascade cascade = new CascadeConnector( getDefaultProperties() ).connect( flows.toArray( new Flow[ 0 ] ) );
 
     CascadeStats stats = cascade.getCascadeStats();

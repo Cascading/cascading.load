@@ -78,6 +78,8 @@ public class Options
   boolean chainedAggregate;
   boolean chainedFunction;
   int hashModulo = -1;
+  boolean writeDotFile = false;
+
 
   public boolean isSinglelineStats()
     {
@@ -632,6 +634,18 @@ public class Options
     this.chainedFunction = chainedFunction;
     }
 
+  public boolean isWriteDotFile()
+    {
+    return writeDotFile;
+    }
+
+  @Option(name = "-wd", aliases = {"--write-dot"}, usage = "write DOT file", required = false)
+  public void setWriteDotFile( boolean writeDotFile )
+    {
+    this.writeDotFile = writeDotFile;
+    }
+
+
   ////////////////////////////////////////
 
   public void prepare()
@@ -746,6 +760,7 @@ public class Options
     sb.append( ", maxConcurrentSteps=" ).append( maxConcurrentSteps );
     sb.append( ", loads=" ).append( getLoadsDesc() );
     sb.append( ", wordDistribution=" ).append( useNormalDistribution() ? getDataNormalDesc() : "uniform" );
+    sb.append( ", writeDotFile=" ).append( writeDotFile );
     sb.append( '}' );
     return sb.toString();
     }
