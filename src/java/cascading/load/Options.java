@@ -63,6 +63,7 @@ public class Options
   int fillFilesPerAvailMapper = -1;
   float dataMeanWords = -1;
   float dataStddevWords = -1;
+  boolean dataConsume = false;
 
   boolean countSort;
   boolean staggeredSort;
@@ -493,6 +494,17 @@ public class Options
   private String getDataNormalDesc()
     {
     return "normal(" + getDataMeanWords() + "," + getDataStddevWords() + ")";
+    }
+
+  public boolean isDataConsume()
+    {
+    return dataConsume;
+    }
+
+  @Option(name = "-cd", aliases = {"--consume"}, usage = "consume test data", required = false)
+  public void setDataConsume( boolean dataConsume )
+    {
+    this.dataConsume = dataConsume;
     }
 
   ////////////////////////////////////////

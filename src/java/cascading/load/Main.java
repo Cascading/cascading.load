@@ -24,6 +24,7 @@ import cascading.flow.Flow;
 import cascading.flow.FlowConnector;
 import cascading.flow.hadoop.HadoopFlow;
 import cascading.load.common.CascadeLoadPlatform;
+import cascading.load.consume.ConsumeData;
 import cascading.load.countsort.CountSort;
 import cascading.load.countsort.FullTupleGroup;
 import cascading.load.countsort.StaggeredSort;
@@ -86,6 +87,9 @@ public class Main
 
     if( options.isDataGenerate() )
       flows.add( new GenerateData( options, getDefaultProperties() ).createFlow() );
+
+    if( options.isDataConsume() )
+      flows.add( new ConsumeData( options, getDefaultProperties() ).createFlow() );
 
     if( options.isCountSort() )
       flows.add( new CountSort( options, getDefaultProperties() ).createFlow() );
