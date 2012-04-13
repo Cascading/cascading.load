@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2012 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.concurrentinc.com/
  */
@@ -44,7 +44,7 @@ public class Options
 
   String inputRoot;
   String outputRoot;
-  String workingRoot = "working_" + System.currentTimeMillis() + "_" + (int) (Math.random() * 1000);
+  String workingRoot = "working_" + System.currentTimeMillis() + "_" + (int) ( Math.random() * 1000 );
   String statsRoot;
 
   boolean cleanWorkFiles = false;
@@ -707,6 +707,8 @@ public class Options
 
     if( dataGenerate )
       loads.append( "dataGenerate," );
+    if( dataConsume )
+      loads.append( "dataConsume," );
     if( pipeline )
       loads.append( "pipeline," );
     if( countSort )
@@ -743,8 +745,7 @@ public class Options
     {
     final StringBuilder sb = new StringBuilder();
     sb.append( "Options" );
-    sb.append( "{localMode=" ).append( localMode );
-    sb.append( ", singlelineStats=" ).append( singlelineStats );
+    sb.append( "{singlelineStats=" ).append( singlelineStats );
     sb.append( ", debugLogging=" ).append( debugLogging );
     sb.append( ", blockSizeMB=" ).append( blockSizeMB );
     sb.append( ", numDefaultMappers=" ).append( numDefaultMappers );
@@ -757,10 +758,17 @@ public class Options
     sb.append( ", hadoopProperties=" ).append( hadoopProperties );
     sb.append( ", numMappersPerBlock=" ).append( numMappersPerBlock );
     sb.append( ", numReducersPerMapper=" ).append( numReducersPerMapper );
+    sb.append( ", childVMOptions='" ).append( childVMOptions ).append( '\'' );
+    sb.append( ", maxConcurrentFlows=" ).append( maxConcurrentFlows );
+    sb.append( ", maxConcurrentSteps=" ).append( maxConcurrentSteps );
     sb.append( ", inputRoot='" ).append( inputRoot ).append( '\'' );
     sb.append( ", outputRoot='" ).append( outputRoot ).append( '\'' );
     sb.append( ", workingRoot='" ).append( workingRoot ).append( '\'' );
     sb.append( ", statsRoot='" ).append( statsRoot ).append( '\'' );
+    sb.append( ", cleanWorkFiles=" ).append( cleanWorkFiles );
+    sb.append( ", localMode=" ).append( localMode );
+    sb.append( ", runAllLoads=" ).append( runAllLoads );
+    sb.append( ", dataGenerate=" ).append( dataGenerate );
     sb.append( ", dataNumFiles=" ).append( dataNumFiles );
     sb.append( ", dataFileSizeMB=" ).append( dataFileSizeMB );
     sb.append( ", dataMaxWords=" ).append( dataMaxWords );
@@ -768,10 +776,21 @@ public class Options
     sb.append( ", dataWordDelimiter='" ).append( dataWordDelimiter ).append( '\'' );
     sb.append( ", fillBlocksPerFile=" ).append( fillBlocksPerFile );
     sb.append( ", fillFilesPerAvailMapper=" ).append( fillFilesPerAvailMapper );
-    sb.append( ", maxConcurrentFlows=" ).append( maxConcurrentFlows );
-    sb.append( ", maxConcurrentSteps=" ).append( maxConcurrentSteps );
-    sb.append( ", loads=" ).append( getLoadsDesc() );
-    sb.append( ", wordDistribution=" ).append( useNormalDistribution() ? getDataNormalDesc() : "uniform" );
+    sb.append( ", dataMeanWords=" ).append( dataMeanWords );
+    sb.append( ", dataStddevWords=" ).append( dataStddevWords );
+    sb.append( ", dataConsume=" ).append( dataConsume );
+    sb.append( ", countSort=" ).append( countSort );
+    sb.append( ", staggeredSort=" ).append( staggeredSort );
+    sb.append( ", fullTupleGroup=" ).append( fullTupleGroup );
+    sb.append( ", multiJoin=" ).append( multiJoin );
+    sb.append( ", innerJoin=" ).append( innerJoin );
+    sb.append( ", outerJoin=" ).append( outerJoin );
+    sb.append( ", leftJoin=" ).append( leftJoin );
+    sb.append( ", rightJoin=" ).append( rightJoin );
+    sb.append( ", pipeline=" ).append( pipeline );
+    sb.append( ", chainedAggregate=" ).append( chainedAggregate );
+    sb.append( ", chainedFunction=" ).append( chainedFunction );
+    sb.append( ", hashModulo=" ).append( hashModulo );
     sb.append( ", writeDotFile=" ).append( writeDotFile );
     sb.append( '}' );
     return sb.toString();

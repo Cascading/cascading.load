@@ -1,33 +1,22 @@
 /*
- * Copyright (c) 2007-2011 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2012 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.concurrentinc.com/
  */
 
 package cascading.load.consume;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 import cascading.flow.Flow;
 import cascading.load.Options;
 import cascading.load.common.Load;
-import cascading.load.util.Util;
 import cascading.operation.expression.ExpressionFilter;
-import cascading.operation.filter.Limit;
-import cascading.operation.filter.Sample;
-import cascading.operation.regex.RegexSplitter;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
-import cascading.flow.hadoop.HadoopFlowProcess;
 import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
-import cascading.tuple.TupleEntryCollector;
-import org.apache.hadoop.mapred.JobConf;
 
 /** Class ConsumeData loads a test corpus of random words. */
 public class ConsumeData extends Load
@@ -41,12 +30,11 @@ public class ConsumeData extends Load
   public Flow createFlow() throws Exception
     {
     Tap source = platform.newTap( platform.newTextLine( new Fields( "line" ) ), getInputPaths()[ 0 ] );
-    Tap sink = platform.newTap( platform.newTextLine( new Fields( "line" ) ), options.getOutputRoot() );
+    Tap sink = platform.newTap( platform.newTextLine( new Fields( "line" ) ), getOutputPaths()[ 0 ], SinkMode.REPLACE );
 
     Pipe pipe = new Pipe( "load-consumer" );
 
-    //ExpressionFilter filter = new ExpressionFilter( "true", Boolean.TYPE );
-    Limit filter = new Limit( 1L );
+    ExpressionFilter filter = new ExpressionFilter( "true", Boolean.TYPE );
 
     pipe = new Each( pipe, new Fields( "line" ), filter );
 
@@ -62,6 +50,6 @@ public class ConsumeData extends Load
   @Override
   public String[] getOutputPaths()
     {
-    return new String[]{options.getInputRoot()};
+    return new String[]{options.getInputRoot() + "consumedata"};
     }
   }
