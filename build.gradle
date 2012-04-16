@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2011 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2012 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.concurrentinc.com/
  */
@@ -12,18 +12,18 @@ apply plugin: 'idea'
 project.archivesBaseName = 'load'
 
 if( project.properties[ 'teamcity' ] ) // make them system properties
-System.properties.putAll(project.properties[ 'teamcity' ])
+  System.properties.putAll( project.properties[ 'teamcity' ] )
 
 if( System.properties[ 'aws.properties' ] )
 {
-  file(System.properties[ 'aws.properties' ]).withReader { reader ->
+  file( System.properties[ 'aws.properties' ] ).withReader { reader ->
     def awsProperties = new Properties()
-    awsProperties.load(reader)
-    System.properties.putAll(awsProperties)
+    awsProperties.load( reader )
+    System.properties.putAll( awsProperties )
   }
 }
 
-timestamp = new SimpleDateFormat("yyyyMMdd").format(new Date())
+timestamp = new SimpleDateFormat( "yyyyMMdd" ).format( new Date() )
 
 configurations {
   sshAntTask
@@ -43,16 +43,16 @@ repositories {
 }
 
 dependencies {
-  compile('cascading:cascading-core:2.0.0-wip-+') { exclude group: 'log4j' }
-  compile('cascading:cascading-hadoop:2.0.0-wip-+') { transitive = false }
-  compile('cascading:cascading-local:2.0.0-wip-+') { transitive = false }
-  compile('org.apache.hadoop:hadoop-core:0.20.2') { exclude group: 'ant' }
-  compile('args4j:args4j:2.0.12')
-  compile('log4j:log4j:1.2.16')
+  compile( 'cascading:cascading-core:2.0.0-wip-+' ) { exclude group: 'log4j' }
+  compile( 'cascading:cascading-hadoop:2.0.0-wip-+' ) { transitive = false }
+  compile( 'cascading:cascading-local:2.0.0-wip-+' ) { transitive = false }
+  compile( 'org.apache.hadoop:hadoop-core:0.20.2' ) { exclude group: 'ant' }
+  compile( 'args4j:args4j:2.0.12' )
+  compile( 'log4j:log4j:1.2.16' )
 
-  testCompile('cascading:cascading-test:2.0.0-wip-+')
-  testCompile('org.apache.hadoop:hadoop-test:0.20.2')
-  testCompile('junit:junit:4.8.+')
+  testCompile( 'cascading:cascading-test:2.0.0-wip-+' )
+  testCompile( 'org.apache.hadoop:hadoop-test:0.20.2' )
+  testCompile( 'junit:junit:4.8.+' )
 }
 
 sourceSets {
@@ -66,11 +66,11 @@ sourceSets {
   }
 }
 
-task shellTest(type: Exec) {
-    commandLine = ['/bin/sh',"${rootDir}/src/test/sh/helper/roundup.sh",
-                             "${rootDir}/src/test/sh/core/*_test.sh",
-                             "${rootDir}/src/test/sh/cascading/*_test.sh",
-                             "${rootDir}/src/test/sh/*_test.sh"]
+task shellTest( type: Exec ) {
+  commandLine = [ '/bin/sh', "${rootDir}/src/test/sh/helper/roundup.sh",
+          "${rootDir}/src/test/sh/core/*_test.sh",
+          "${rootDir}/src/test/sh/cascading/*_test.sh",
+          "${rootDir}/src/test/sh/*_test.sh" ]
 }
 
 test {
@@ -88,38 +88,38 @@ jar {
     def set = new HashSet()
 
     def deps = configurations.compile.resolvedConfiguration.firstLevelModuleDependencies.findAll { dep ->
-      !dep.name.startsWith('org.apache.hadoop') && !dep.name.startsWith('log4j')
+      !dep.name.startsWith( 'org.apache.hadoop' ) && !dep.name.startsWith( 'log4j' )
     }.collect { dep ->
       dep.allModuleArtifacts.collect {
         it.file
       }
     }
 
-    deps.each { col -> set.addAll(col)}
+    deps.each { col -> set.addAll( col )}
 
-    into('lib') {
-      from(set)
+    into( 'lib' ) {
+      from( set )
     }
   }
 
   manifest {
-    attributes("Main-Class": "cascading/load/Main")
-    attributes("Build-Date": "${timestamp}")
+    attributes( "Main-Class": "cascading/load/Main" )
+    attributes( "Build-Date": "${timestamp}" )
   }
 }
 
-task distCopy(type: Copy, dependsOn: jar) {
+task distCopy( type: Copy, dependsOn: jar ) {
 
   into "${buildDir}/dist/${archivesBaseName}"
 
   from 'README.TXT'
   from 'build.gradle'
-  from('src') {into 'src'}
+  from( 'src' ) {into 'src'}
 
   from "$buildDir/libs"
 }
 
-task dist(type: Tar, dependsOn: distCopy) {
+task dist( type: Tar, dependsOn: distCopy ) {
 
   compression = "GZIP"
   version = timestamp
@@ -127,7 +127,7 @@ task dist(type: Tar, dependsOn: distCopy) {
   from "${buildDir}/dist/"
 }
 
-task s3Upload(dependsOn: dist) {
+task s3Upload( dependsOn: dist ) {
 
   awsAccessId = System.properties[ 'publish.aws.accessId' ]
   awsSecretKey = System.properties[ 'publish.aws.secretKey' ]
@@ -138,24 +138,24 @@ task s3Upload(dependsOn: dist) {
 
 s3Upload << {
 
-  def latestPath = new File(buildDir, 'latest.txt')
+  def latestPath = new File( buildDir, 'latest.txt' )
 
-  latestPath.write("http://${s3Bucket}/${remotePath}${jar.archivePath.name}")
+  latestPath.write( "http://${s3Bucket}/${remotePath}${jar.archivePath.name}" )
 
-  ant.taskdef(name: 's3Upload', classname: 'dak.ant.taskdefs.S3Upload',
-          classpath: configurations.s3AntTask.asPath)
+  ant.taskdef( name: 's3Upload', classname: 'dak.ant.taskdefs.S3Upload',
+          classpath: configurations.s3AntTask.asPath )
 
-  ant.s3Upload(verbose: 'true', accessId: awsAccessId, secretKey: awsSecretKey,
-          bucket: s3Bucket, prefix: remotePath, publicRead: 'true') {
-    fileset(file: dist.archivePath)
-    fileset(file: jar.archivePath)
-    fileset(file: latestPath)
+  ant.s3Upload( verbose: 'true', accessId: awsAccessId, secretKey: awsSecretKey,
+          bucket: s3Bucket, prefix: remotePath, publicRead: 'true' ) {
+    fileset( file: dist.archivePath )
+    fileset( file: jar.archivePath )
+    fileset( file: latestPath )
   }
 
   latestPath.delete()
 }
 
-task sitePublish(dependsOn: s3Upload) << {
+task sitePublish( dependsOn: s3Upload ) << {
 
   def publishBucket = System.properties[ 'publish.bucket' ]
   def publishDownloadPath = System.properties[ 'publish.download.path' ]
@@ -164,17 +164,17 @@ task sitePublish(dependsOn: s3Upload) << {
 
   def releaseTar = dist.archivePath.name
 
-  def currentPath = new File(buildDir, 'load-current.txt')
+  def currentPath = new File( buildDir, 'load-current.txt' )
 
-  currentPath.write("http://${publishBucket}/load/2.0/${releaseTar}")
+  currentPath.write( "http://${publishBucket}/load/2.0/${releaseTar}" )
 
-  ant.taskdef(name: 'scp', classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp',
-          classpath: configurations.sshAntTask.asPath)
+  ant.taskdef( name: 'scp', classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp',
+          classpath: configurations.sshAntTask.asPath )
 
   def remoteToFile = "${publishDownloadPath}/load/2.0/${releaseTar}"
 
-  ant.scp(file: currentPath, remoteToFile: remoteToFile,
-          keyfile: publishKeyFile, passphrase: '', port: publishPort, trust: 'true')
+  ant.scp( file: currentPath, remoteToFile: remoteToFile,
+          keyfile: publishKeyFile, passphrase: '', port: publishPort, trust: 'true' )
 
   currentPath.delete()
 }
