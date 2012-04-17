@@ -20,9 +20,10 @@ import java.util.Properties;
 
 import cascading.cascade.Cascade;
 import cascading.cascade.CascadeConnector;
+import cascading.cascade.CascadeProps;
 import cascading.flow.Flow;
-import cascading.flow.FlowConnector;
-import cascading.flow.hadoop.HadoopFlow;
+import cascading.flow.FlowConnectorProps;
+import cascading.flow.FlowProps;
 import cascading.load.common.CascadeLoadPlatform;
 import cascading.load.consume.ConsumeData;
 import cascading.load.countsort.CountSort;
@@ -40,12 +41,13 @@ import cascading.load.pipeline.Pipeline;
 import cascading.load.util.StatsPrinter;
 import cascading.load.util.Util;
 import cascading.operation.DebugLevel;
+import cascading.property.AppProps;
 import cascading.stats.CascadeStats;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
-import cascading.tuple.SpillableTupleList;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntryCollector;
+import cascading.tuple.collect.SpillableTupleList;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobConf;
@@ -125,11 +127,12 @@ public class Main
       flows.add( new OnlyOuterJoin( options, getDefaultProperties() ).createFlow() );
 
     if( options.isWriteDotFile() )
-      for( Flow flow : flows ) {
+      for( Flow flow : flows )
+        {
         String file_name = flow.getName() + ".dot";
         LOG.info( "DOT file: " + file_name );
         flow.writeDOT( file_name );
-      }
+        }
 
     Cascade cascade = new CascadeConnector( getDefaultProperties() ).connect( flows.toArray( new Flow[ 0 ] ) );
 
@@ -233,9 +236,9 @@ public class Main
       }
 
     if( options.isDebugLogging() )
-      FlowConnector.setDebugLevel( properties, DebugLevel.VERBOSE );
+      FlowConnectorProps.setDebugLevel( properties, DebugLevel.VERBOSE );
     else
-      FlowConnector.setDebugLevel( properties, DebugLevel.NONE );
+      FlowConnectorProps.setDebugLevel( properties, DebugLevel.NONE );
 
     if( !options.isLocalMode() )
       {
@@ -279,13 +282,13 @@ public class Main
         }
 
       if( options.getMaxConcurrentSteps() != -1 )
-        HadoopFlow.setMaxConcurrentSteps( properties, options.getMaxConcurrentSteps() );
+        FlowProps.setMaxConcurrentSteps( properties, options.getMaxConcurrentSteps() );
       }
 
     if( options.getMaxConcurrentFlows() != -1 )
-      Cascade.setMaxConcurrentFlows( properties, options.getMaxConcurrentFlows() );
+      CascadeProps.setMaxConcurrentFlows( properties, options.getMaxConcurrentFlows() );
 
-    FlowConnector.setApplicationJarClass( properties, Main.class );
+    AppProps.setApplicationJarClass( properties, Main.class );
 
     return properties;
     }
@@ -327,7 +330,7 @@ public class Main
 
       String releaseMajor = versionProperties.getProperty( "cascading.release.major" );
       String releaseMinor = versionProperties.getProperty( "cascading.release.minor", null );
-      String releaseBuild = versionProperties.getProperty( "build.number", null );
+      String releaseBuild = versionProperties.getProperty( "cascading.build.number", null );
       String releaseFull = null;
 
       if( releaseMinor == null )

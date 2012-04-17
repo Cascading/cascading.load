@@ -1,22 +1,7 @@
 /*
- * Copyright (c) 2007-2009 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2012 Concurrent, Inc. All Rights Reserved.
  *
- * Project and contact information: http://www.cascading.org/
- *
- * This file is part of the Cascading project.
- *
- * Cascading is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * Cascading is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with Cascading.  If not, see <http://www.gnu.org/licenses/>.
+ * Project and contact information: http://www.concurrentinc.com/
  */
 
 package cascading.load.common;
@@ -25,25 +10,24 @@ import java.io.IOException;
 import java.util.Map;
 
 import cascading.flow.FlowConnector;
+import cascading.flow.hadoop.HadoopFlowConnector;
+import cascading.flow.hadoop.HadoopFlowProcess;
+import cascading.flow.local.LocalFlowConnector;
+import cascading.flow.local.LocalFlowProcess;
 import cascading.load.Options;
 import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
+import cascading.tap.hadoop.Hfs;
+import cascading.tap.local.FileTap;
 import cascading.tuple.Fields;
 import cascading.tuple.TupleEntryCollector;
-import cascading.flow.hadoop.HadoopFlowProcess;
-import cascading.tap.hadoop.Hfs;
-import cascading.flow.hadoop.HadoopFlowConnector;
-import cascading.tap.local.FileTap;
-import cascading.flow.local.LocalFlowProcess;
-import cascading.flow.local.LocalFlowConnector;
-import cascading.scheme.local.LocalScheme;
 
 /**
  * Provides access to Cascading platform (local or hadoop) specific implementation objects.
- *
+ * <p/>
  * Only those aspects used by cascading.load are supported.
- *
+ * <p/>
  * Not thread safe.
  */
 public abstract class CascadeLoadPlatform
@@ -101,7 +85,7 @@ public abstract class CascadeLoadPlatform
       }
 
     @Override
-    public FlowConnector newFlowConnector( Map<Object,Object> properties )
+    public FlowConnector newFlowConnector( Map<Object, Object> properties )
       {
       return new HadoopFlowConnector( properties );
       }
@@ -117,13 +101,13 @@ public abstract class CascadeLoadPlatform
     @Override
     public Tap newTap( Scheme scheme, String stringPath )
       {
-      return new FileTap( (LocalScheme) scheme, stringPath );
+      return new FileTap( scheme, stringPath );
       }
 
     @Override
     public Tap newTap( Scheme scheme, String stringPath, SinkMode sinkMode )
       {
-      return new FileTap( (LocalScheme) scheme, stringPath, sinkMode );
+      return new FileTap( scheme, stringPath, sinkMode );
       }
 
     @Override
@@ -157,7 +141,7 @@ public abstract class CascadeLoadPlatform
       }
 
     @Override
-    public FlowConnector newFlowConnector( Map<Object,Object> properties )
+    public FlowConnector newFlowConnector( Map<Object, Object> properties )
       {
       return new LocalFlowConnector( properties );
       }
@@ -193,5 +177,5 @@ public abstract class CascadeLoadPlatform
 
   public abstract FlowConnector newFlowConnector();
 
-  public abstract FlowConnector newFlowConnector( Map<Object,Object> properties );
+  public abstract FlowConnector newFlowConnector( Map<Object, Object> properties );
   }
