@@ -53,11 +53,13 @@ To run from the command line with the jar, Hadoop should be in the path:
 
     $ hadoop jar cascading.load-<release-date>.jar <args>
 
-If no args are given, a comprehensive list of commands will be printed.
-
-Or if Load has been installed from above:
+or if Load has been installed from above:
 
     $ cascading.load <args>
+
+If no args are given, a comprehensive list of commands will be
+printed. That list is also available as `COMMANDS.md` in this
+directory.
 
 Building
 --------
@@ -76,4 +78,4 @@ To test,
 License
 -------
 
-See `LICENSE.txt` in this directory.
+See `apl.txt` in this directory.

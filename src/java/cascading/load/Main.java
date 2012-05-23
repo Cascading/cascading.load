@@ -10,8 +10,6 @@ import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -53,8 +51,14 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.kohsuke.args4j.CmdLineException;
-import org.kohsuke.args4j.CmdLineParser;
+
+//import org.kohsuke.args4j.CmdLineException;
+//import org.kohsuke.args4j.CmdLineParser;
+
+import joptsimple.OptionException;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+
 
 /**
  *
@@ -295,18 +299,34 @@ public class Main
 
   protected static Options initOptions( String[] args, Options options ) throws IOException
     {
-    CmdLineParser parser = new CmdLineParser( options );
-
     try
       {
-      parser.parseArgument( args );
+      options.parseArgs( args );
+      System.exit( 0 );
       }
-    catch( CmdLineException exception )
+    catch( Exception e )
       {
       System.out.print( "error: " );
-      System.out.println( exception.getMessage() );
-      printUsageAndExit( parser );
+      System.out.println( e.getMessage() );
+
+      options.printUsage( false );
+      System.exit( 1 );
       }
+
+    /*
+     CmdLineParser parser = new CmdLineParser( options );
+
+     try
+       {
+       parser.parseArgument( args );
+       }
+     catch( CmdLineException exception )
+       {
+       System.out.print( "error: " );
+       System.out.println( exception.getMessage() );
+       options.printUsageAndExit( parser, false );
+       }
+     */
 
     options.prepare();
 
@@ -314,86 +334,4 @@ public class Main
 
     return options;
     }
-
-  private static void printCascadingVersion()
-    {
-    try
-      {
-      Properties versionProperties = new Properties();
-
-      InputStream stream = Cascade.class.getClassLoader().getResourceAsStream( "cascading/version.properties" );
-      versionProperties.load( stream );
-
-      stream = Cascade.class.getClassLoader().getResourceAsStream( "cascading/build.number.properties" );
-      if( stream != null )
-        versionProperties.load( stream );
-
-      String releaseMajor = versionProperties.getProperty( "cascading.release.major" );
-      String releaseMinor = versionProperties.getProperty( "cascading.release.minor", null );
-      String releaseBuild = versionProperties.getProperty( "cascading.build.number", null );
-      String releaseFull = null;
-
-      if( releaseMinor == null )
-        releaseFull = releaseMajor;
-      else if( releaseBuild == null )
-        releaseFull = String.format( "%s.%s", releaseMajor, releaseMinor );
-      else
-        releaseFull = String.format( "%s.%s%s", releaseMajor, releaseMinor, releaseBuild );
-
-
-      System.out.println( String.format( "Using Cascading %s", releaseFull ) );
-      }
-    catch( IOException exception )
-      {
-      System.out.println( "Unknown Cascading Version" );
-      }
-    }
-
-  private static void printLicense()
-    {
-    try
-      {
-      InputStream stream = Main.class.getResourceAsStream( "/LOAD-LICENSE.txt" );
-      BufferedReader reader = new BufferedReader( new InputStreamReader( stream ) );
-
-      System.out.print( "This release is licensed under the " );
-
-      String line = reader.readLine();
-
-      while( line != null )
-        {
-        if( line.matches( "^Binary License:.*$" ) )
-          {
-          System.out.println( line.substring( 15 ).trim() );
-          break;
-          }
-
-        line = reader.readLine();
-        }
-
-      reader.close();
-      }
-    catch( Exception exception )
-      {
-      System.out.println( "Unspecified License" );
-      }
-    }
-
-  protected static void printUsageAndExit( CmdLineParser parser )
-    {
-    System.out.println( "cascading.load [options...]" );
-
-    printLicense();
-    printCascadingVersion();
-
-//    System.err.println( "Optional:" );
-//    System.err.println( String.format( " env vars: %s, %s", AWS.AWS_ACCESS_KEY_ENV, AWS.AWS_SECRET_KEY_ENV ) );
-
-    System.out.println( "" );
-    System.out.println( "Usage:" );
-    parser.printUsage( System.out );
-
-    System.exit( 1 );
-    }
-
   }

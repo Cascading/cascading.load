@@ -6,12 +6,27 @@
 
 package cascading.load;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 
+import cascading.cascade.Cascade;
 import cascading.load.util.Util;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+import joptsimple.OptionSpecBuilder;
 import org.apache.log4j.Logger;
-import org.kohsuke.args4j.Option;
+
+import static joptsimple.util.DateConverter.*;
+
+//import org.kohsuke.args4j.Option;
+
 
 /**
  *
@@ -23,6 +38,150 @@ public class Options
   public static final float MIN_DATA_STDDEV = Float.MIN_VALUE;
   public static final float DEF_DATA_STDDEV = 0.2f;
   public static final float MAX_DATA_STDDEV = 0.9999f;
+
+  //////////////////////////////////////////////////////////////////////
+  // inner class to parse options
+
+  OptionParser parser = new OptionParser();
+  ArrayList option_list = new ArrayList();
+
+  private static Collection<String> trimDashes( Collection<String> params )
+    {
+    ArrayList<String> stripped = new ArrayList<String>();
+
+    for( String param : params )
+      {
+      int i = 0;
+
+      do
+        {
+        if( param.charAt( i ) != '-' )
+          break;
+        else
+          i += 1;
+        }
+      while( i < param.length() );
+
+      stripped.add( param.substring( i ) );
+      }
+
+    return stripped;
+    }
+
+
+  private class OptionGlyph
+    {
+    Collection<String> opt_param;
+    Collection<String> opt_names;
+    String method_name;
+    Class arg_class;
+    boolean is_required;
+    boolean multi_value;
+    String description;
+
+    OptionGlyph( Collection<String> opt_param, String method_name, Class arg_class, boolean is_required, boolean multi_value, String description )
+      {
+      option_list.add( this );
+
+      this.opt_param = opt_param;
+      this.opt_names = trimDashes( opt_param );
+      this.method_name = method_name;
+      this.arg_class = arg_class;
+      this.is_required = is_required;
+      this.multi_value = multi_value;
+      this.description = description;
+
+      OptionSpecBuilder osb = Options.this.parser.acceptsAll( this.opt_names, this.description );
+
+      if( this.arg_class != null )
+        osb.withRequiredArg().ofType( this.arg_class );
+
+      if( this.is_required )
+        osb.isRequired();
+      }
+
+
+    String generateMarkdown()
+      {
+      StringBuilder line = new StringBuilder( "<tr><td><code>" );
+      boolean is_first = true;
+
+      for( String p : this.opt_param )
+        {
+        if( is_first )
+          {
+          line.append( p );
+          is_first = false;
+          }
+        else
+          line.append( "|" ).append( p );
+        }
+
+      line.append( "</code></td><td>" );
+      line.append( this.description );
+      line.append( "</td></tr>" );
+
+      return line.toString();
+      }
+
+
+    boolean attempt( OptionSet opts )
+      {
+      for( String opt_name : this.opt_names )
+        {
+        if( opts.has( opt_name ) )
+          {
+          try
+            {
+            Method method;
+            Class clazz = Options.this.getClass();
+
+            if( arg_class != null )
+              {
+              method = clazz.getMethod( this.method_name, new Class[]{this.arg_class} );
+
+              if( this.multi_value )
+                {
+                for( Object val : opts.valuesOf( opt_name ) )
+                  {
+                  Object result = method.invoke( Options.this, new Object[]{val} );
+                  }
+                }
+              else
+                {
+                Object result = method.invoke( Options.this, new Object[]{opts.valueOf( opt_name )} );
+                }
+              }
+            else
+              {
+              method = clazz.getMethod( this.method_name, new Class[]{boolean.class} );
+              Object result = method.invoke( Options.this, new Object[]{true} );
+              }
+            }
+          catch( NoSuchMethodException e )
+            {
+            e.printStackTrace();
+            }
+          catch( IllegalAccessException e )
+            {
+            e.printStackTrace();
+            }
+          catch( InvocationTargetException e )
+            {
+            e.printStackTrace();
+            }
+
+          return true;
+          }
+        }
+
+      return false;
+      }
+    }
+
+
+  //////////////////////////////////////////////////////////////////////
+  // option variables
 
   boolean singlelineStats = false;
   boolean debugLogging = false;
@@ -81,13 +240,240 @@ public class Options
   int hashModulo = -1;
   boolean writeDotFile = false;
 
+  OptionGlyph help_option;
+  OptionGlyph mark_option;
+
+
+  public Options()
+    {
+    OptionGlyph glyph;
+    OptionSpecBuilder osb;
+
+    glyph = new OptionGlyph( Arrays.asList( "-h", "--help" ), "printUsageWrapper", null, false, false, "print this help text" );
+    this.help_option = glyph;
+
+    glyph = new OptionGlyph( Arrays.asList( "--markdown" ), "generateMarkdown", null, false, false, "generate help text as GitHub Flavored Markdown" );
+    this.mark_option = glyph;
+
+    glyph = new OptionGlyph( Arrays.asList( "-SLS" ), "setSinglelineStats", null, false, false, "single-line stats" );
+    glyph = new OptionGlyph( Arrays.asList( "-X" ), "setDebugLogging", null, false, false, "debug logging" );
+    glyph = new OptionGlyph( Arrays.asList( "-BS" ), "setBlockSizeMB", int.class, false, false, "default block size" );
+    glyph = new OptionGlyph( Arrays.asList( "-NM" ), "setNumDefaultMappers", int.class, false, false, "default num mappers" );
+    glyph = new OptionGlyph( Arrays.asList( "-NR" ), "setNumDefaultReducers", int.class, false, false, "default num reducers" );
+    glyph = new OptionGlyph( Arrays.asList( "-PM" ), "setPercentMaxMappers", float.class, false, false, "percent of max mappers" );
+    glyph = new OptionGlyph( Arrays.asList( "-PR" ), "setPercentMaxReducers", float.class, false, false, "percent of max reducers" );
+    glyph = new OptionGlyph( Arrays.asList( "-EM" ), "setMapSpecExec", null, false, false, "enable map side speculative execution" );
+    glyph = new OptionGlyph( Arrays.asList( "-ER" ), "setReduceSpecExec", null, false, false, "enable reduce side speculative execution" );
+    glyph = new OptionGlyph( Arrays.asList( "-TS" ), "setTupleSpillThreshold", int.class, false, false, "tuple spill threshold, default 100,000" );
+    glyph = new OptionGlyph( Arrays.asList( "-DH" ), "setHadoopProperties", String.class, false, true, "optional Hadoop config job properties (can be used multiple times)" );
+    glyph = new OptionGlyph( Arrays.asList( "-MB" ), "setNumMappersPerBlock", int.class, false, false, "mappers per block (unused)" );
+    glyph = new OptionGlyph( Arrays.asList( "-RM" ), "setNumReducersPerMapper", int.class, false, false, "reducers per mapper (unused)" );
+    glyph = new OptionGlyph( Arrays.asList( "-I" ), "setInputRoot", String.class, true, false, "load input data path (generated data arrives here)" );
+    glyph = new OptionGlyph( Arrays.asList( "-O" ), "setOutputRoot", String.class, true, false, "output path for load results" );
+    glyph = new OptionGlyph( Arrays.asList( "-W" ), "setWorkingRoot", String.class, false, false, "input/output path for working files" );
+    glyph = new OptionGlyph( Arrays.asList( "-S" ), "setStatsRoot", String.class, false, false, "output path for job stats" );
+    glyph = new OptionGlyph( Arrays.asList( "-CWF" ), "setCleanWorkFiles", null, false, false, "clean work files" );
+    glyph = new OptionGlyph( Arrays.asList( "-CVMO" ), "setChildVMOptions", String.class, false, false, "child JVM options" );
+    glyph = new OptionGlyph( Arrays.asList( "-MXCF" ), "setMaxConcurrentFlows", int.class, false, false, "maximum concurrent flows" );
+    glyph = new OptionGlyph( Arrays.asList( "-MXCS" ), "setMaxConcurrentSteps", int.class, false, false, "maximum concurrent steps" );
+    glyph = new OptionGlyph( Arrays.asList( "-ALL" ), "setRunAllLoads", null, false, false, "run all available (non-discrete) loads" );
+    glyph = new OptionGlyph( Arrays.asList( "-LM" ), "setLocalMode", null, false, false, "use the local platform" );
+    glyph = new OptionGlyph( Arrays.asList( "-g", "--generate" ), "setDataGenerate", null, false, false, "generate test data" );
+    glyph = new OptionGlyph( Arrays.asList( "-gf", "--generate-num-files" ), "setDataNumFiles", int.class, false, false, "num files to create" );
+    glyph = new OptionGlyph( Arrays.asList( "-gs", "--generate-file-size" ), "setDataFileSizeMB", float.class, false, false, "size in MB of each file" );
+    glyph = new OptionGlyph( Arrays.asList( "-gmax", "--generate-max-words" ), "setDataMaxWords", int.class, false, false, "max words per line, inclusive" );
+    glyph = new OptionGlyph( Arrays.asList( "-gmin", "--generate-min-words" ), "setDataMinWords", int.class, false, false, "min words per line, inclusive" );
+    glyph = new OptionGlyph( Arrays.asList( "-gd", "--generate-word-delimiter" ), "setDataWordDelimiter", String.class, false, false, "delimiter for words" );
+    glyph = new OptionGlyph( Arrays.asList( "-gbf", "--generate-blocks-per-file" ), "setFillBlocksPerFile", int.class, false, false, "fill num blocks per file" );
+    glyph = new OptionGlyph( Arrays.asList( "-gfm", "--generate-files-per-mapper" ), "setFillFilesPerAvailMapper", int.class, false, false, "fill num files per available mapper" );
+    glyph = new OptionGlyph( Arrays.asList( "-gwm", "--generate-words-mean" ), "setDataMeanWords", float.class, false, false, "mean modifier [-1,1] of a normal distribution from dictionary" );
+    glyph = new OptionGlyph( Arrays.asList( "-gws", "--generate-words-stddev" ), "setDataStddevWords", float.class, false, false, "standard-deviation modifier (0,1) of a normal distribution from dictionary" );
+    glyph = new OptionGlyph( Arrays.asList( "-cd", "--consume" ), "setDataConsume", null, false, false, "consume test data" );
+    glyph = new OptionGlyph( Arrays.asList( "-c", "--count-sort" ), "setCountSort", null, false, false, "run count sort load" );
+    glyph = new OptionGlyph( Arrays.asList( "-ss", "--staggered-sort" ), "setStaggeredSort", null, false, false, "run staggered compare sort load" );
+    glyph = new OptionGlyph( Arrays.asList( "-fg", "--full-group" ), "setFullTupleGroup", null, false, false, "run full tuple grouping load" );
+    glyph = new OptionGlyph( Arrays.asList( "-m", "--multi-join" ), "setMultiJoin", null, false, false, "run multi join load" );
+    glyph = new OptionGlyph( Arrays.asList( "-ij", "--inner-join" ), "setInnerJoin", null, false, false, "run inner join load" );
+    glyph = new OptionGlyph( Arrays.asList( "-oj", "--outer-join" ), "setOuterJoin", null, false, false, "run outer join load" );
+    glyph = new OptionGlyph( Arrays.asList( "-lj", "--left-join" ), "setLeftJoin", null, false, false, "run left join load" );
+    glyph = new OptionGlyph( Arrays.asList( "-rj", "--right-join" ), "setRightJoin", null, false, false, "run right join load" );
+    glyph = new OptionGlyph( Arrays.asList( "-p", "--pipeline" ), "setPipeline", null, false, false, "run pipeline load" );
+    glyph = new OptionGlyph( Arrays.asList( "-pm", "--pipeline-hash-modulo" ), "setHashModulo", int.class, false, false, "hash modulo for managing key distribution" );
+    glyph = new OptionGlyph( Arrays.asList( "-ca", "--chained-aggregate" ), "setChainedAggregate", null, false, false, "run chained aggregate load" );
+    glyph = new OptionGlyph( Arrays.asList( "-cf", "--chained-function" ), "setChainedFunction", null, false, false, "run chained function load" );
+    glyph = new OptionGlyph( Arrays.asList( "-wd", "--write-dot" ), "setWriteDotFile", null, false, false, "write DOT file" );
+    }
+
+
+  public void parseArgs( String[] args )
+    {
+    OptionSet opts = this.parser.parse( args );
+
+    if( !opts.hasOptions() )
+      {
+      printUsage( false );
+      System.exit( 1 );
+      }
+    else if( this.help_option.attempt( opts ) )
+      {
+      printUsage( false );
+      System.exit( 0 );
+      }
+    else if( this.mark_option.attempt( opts ) )
+      {
+      printUsage( true );
+      System.exit( 0 );
+      }
+    else
+      {
+      for( Object obj : option_list )
+        {
+        ( (OptionGlyph) obj ).attempt( opts );
+        }
+      }
+    }
+
+
+  //////////////////////////////////////////////////////////////////////
+  // print markdown, usage, version, license
+
+  public void printUsageWrapper( boolean ignore )
+    {
+    // placeholder: print help text
+    }
+
+  public void generateMarkdown( boolean ignore )
+    {
+    // placeholder: generate help text as GitHub Flavored Markdown
+    }
+
+
+  private static void printCascadingVersion()
+    {
+    try
+      {
+      Properties versionProperties = new Properties();
+
+      InputStream stream = Cascade.class.getClassLoader().getResourceAsStream( "cascading/version.properties" );
+      versionProperties.load( stream );
+
+      stream = Cascade.class.getClassLoader().getResourceAsStream( "cascading/build.number.properties" );
+      if( stream != null )
+        versionProperties.load( stream );
+
+      String releaseMajor = versionProperties.getProperty( "cascading.release.major" );
+      String releaseMinor = versionProperties.getProperty( "cascading.release.minor", null );
+      String releaseBuild = versionProperties.getProperty( "cascading.build.number", null );
+      String releaseFull = null;
+
+      if( releaseMinor == null )
+        releaseFull = releaseMajor;
+      else if( releaseBuild == null )
+        releaseFull = String.format( "%s.%s", releaseMajor, releaseMinor );
+      else
+        releaseFull = String.format( "%s.%s%s", releaseMajor, releaseMinor, releaseBuild );
+
+      System.out.println( String.format( "Using Cascading %s", releaseFull ) );
+      }
+    catch( IOException exception )
+      {
+      System.out.println( "Unknown Cascading Version" );
+      }
+    }
+
+  private static void printLicense()
+    {
+    System.out.println( "This release is licensed under the Apache Software License 2.0.\n" );
+
+    /*
+    try
+      {
+      InputStream stream = Main.class.getResourceAsStream( "/LOAD-LICENSE.txt" );
+      BufferedReader reader = new BufferedReader( new InputStreamReader( stream ) );
+
+      System.out.print( "This release is licensed under the " );
+
+      String line = reader.readLine();
+
+      while( line != null )
+        {
+        if( line.matches( "^Binary License:.*$" ) )
+          {
+          System.out.println( line.substring( 15 ).trim() );
+          break;
+          }
+
+        line = reader.readLine();
+        }
+
+      reader.close();
+      }
+    catch( Exception exception )
+      {
+      System.out.println( "Unspecified License" );
+      }
+    */
+    }
+
+  public void printUsage( boolean gen_markdown )
+    {
+    if( gen_markdown )
+      {
+      System.out.println( "Load - Command Line Reference" );
+      System.out.println( "=============================" );
+
+      System.out.println( "    cascading.load [param] [param] ..." );
+      System.out.println( "" );
+      System.out.println( "<table>" );
+      }
+    else
+      {
+      System.out.println( "cascading.load [options...]" );
+
+      System.out.println( "" );
+      System.out.println( "Usage:" );
+      System.out.println( "" );
+      }
+
+    try
+      {
+      if( gen_markdown )
+        {
+        for( Object obj : option_list )
+          {
+          System.out.println( ( (OptionGlyph) obj ).generateMarkdown() );
+          }
+        }
+      else
+        {
+        this.parser.printHelpOn( System.out );
+        }
+
+      }
+    catch( IOException e )
+      {
+      e.printStackTrace();
+      }
+
+    if( gen_markdown )
+      {
+      System.out.println( "</table>" );
+      }
+
+    System.out.println( "" );
+    printCascadingVersion();
+    printLicense();
+    }
+
+  //////////////////////////////////////////////////////////////////////
+  // option handlers
 
   public boolean isSinglelineStats()
     {
     return singlelineStats;
     }
 
-  @Option(name = "-SLS", usage = "single-line stats", required = false)
+  //@Option(name = "-SLS", usage = "single-line stats", required = false)
   public void setSinglelineStats( boolean singlelineStats )
     {
     this.singlelineStats = singlelineStats;
@@ -98,7 +484,7 @@ public class Options
     return debugLogging;
     }
 
-  @Option(name = "-X", usage = "debug logging", required = false)
+  //@Option(name = "-X", usage = "debug logging", required = false)
   public void setDebugLogging( boolean debugLogging )
     {
     this.debugLogging = debugLogging;
@@ -109,7 +495,7 @@ public class Options
     return blockSizeMB;
     }
 
-  @Option(name = "-BS", usage = "default block size", required = false)
+  //@Option(name = "-BS", usage = "default block size", required = false)
   public void setBlockSizeMB( int blockSizeMB )
     {
     this.blockSizeMB = blockSizeMB;
@@ -120,7 +506,7 @@ public class Options
     return numDefaultMappers;
     }
 
-  @Option(name = "-NM", usage = "default num mappers", required = false)
+  //@Option(name = "-NM", usage = "default num mappers", required = false)
   public void setNumDefaultMappers( int numDefaultMappers )
     {
     this.numDefaultMappers = numDefaultMappers;
@@ -131,7 +517,7 @@ public class Options
     return numDefaultReducers;
     }
 
-  @Option(name = "-NR", usage = "default num reducers", required = false)
+  //@Option(name = "-NR", usage = "default num reducers", required = false)
   public void setNumDefaultReducers( int numDefaultReducers )
     {
     this.numDefaultReducers = numDefaultReducers;
@@ -142,7 +528,7 @@ public class Options
     return percentMaxMappers;
     }
 
-  @Option(name = "-PM", usage = "percent of max mappers", required = false)
+  //@Option(name = "-PM", usage = "percent of max mappers", required = false)
   public void setPercentMaxMappers( float percentMaxMappers )
     {
     this.percentMaxMappers = percentMaxMappers;
@@ -153,7 +539,7 @@ public class Options
     return percentMaxReducers;
     }
 
-  @Option(name = "-PR", usage = "percent of max reducers", required = false)
+  //@Option(name = "-PR", usage = "percent of max reducers", required = false)
   public void setPercentMaxReducers( float percentMaxReducers )
     {
     this.percentMaxReducers = percentMaxReducers;
@@ -164,7 +550,7 @@ public class Options
     return mapSpecExec;
     }
 
-  @Option(name = "-EM", usage = "enable map side speculative execution", required = false)
+  //@Option(name = "-EM", usage = "enable map side speculative execution", required = false)
   public void setMapSpecExec( boolean mapSpecExec )
     {
     this.mapSpecExec = mapSpecExec;
@@ -175,7 +561,7 @@ public class Options
     return reduceSpecExec;
     }
 
-  @Option(name = "-ER", usage = "enable reduce side speculative execution", required = false)
+  //@Option(name = "-ER", usage = "enable reduce side speculative execution", required = false)
   public void setReduceSpecExec( boolean reduceSpecExec )
     {
     this.reduceSpecExec = reduceSpecExec;
@@ -186,7 +572,7 @@ public class Options
     return tupleSpillThreshold;
     }
 
-  @Option(name = "-TS", usage = "tuple spill threshold, default 100,000", required = false)
+  //@Option(name = "-TS", usage = "tuple spill threshold, default 100,000", required = false)
   public void setTupleSpillThreshold( int tupleSpillThreshold )
     {
     this.tupleSpillThreshold = tupleSpillThreshold;
@@ -197,7 +583,7 @@ public class Options
     return hadoopProperties;
     }
 
-  @Option(name = "-DH", usage = "optional Hadoop config job properties", required = false, multiValued = true)
+  //@Option(name = "-DH", usage = "optional Hadoop config job properties", required = false, multiValued = true)
   public void setHadoopProperties( String hadoopProperty )
     {
     this.hadoopProperties.add( hadoopProperty );
@@ -208,7 +594,7 @@ public class Options
     return numMappersPerBlock;
     }
 
-  @Option(name = "-MB", usage = "mappers per block (unused)", required = false)
+  //@Option(name = "-MB", usage = "mappers per block (unused)", required = false)
   public void setNumMappersPerBlock( int numMappersPerBlock )
     {
     this.numMappersPerBlock = numMappersPerBlock;
@@ -219,7 +605,7 @@ public class Options
     return numReducersPerMapper;
     }
 
-  @Option(name = "-RM", usage = "reducers per mapper (unused)", required = false)
+  //@Option(name = "-RM", usage = "reducers per mapper (unused)", required = false)
   public void setNumReducersPerMapper( int numReducersPerMapper )
     {
     this.numReducersPerMapper = numReducersPerMapper;
@@ -232,7 +618,7 @@ public class Options
     return makePathDir( inputRoot );
     }
 
-  @Option(name = "-I", usage = "load input data path (generated data arrives here)", required = true)
+  //@Option(name = "-I", usage = "load input data path (generated data arrives here)", required = true)
   public void setInputRoot( String inputRoot )
     {
     this.inputRoot = inputRoot;
@@ -243,7 +629,7 @@ public class Options
     return makePathDir( outputRoot );
     }
 
-  @Option(name = "-O", usage = "output path for load results", required = true)
+  //@Option(name = "-O", usage = "output path for load results", required = true)
   public void setOutputRoot( String outputRoot )
     {
     this.outputRoot = outputRoot;
@@ -254,7 +640,7 @@ public class Options
     return makePathDir( workingRoot );
     }
 
-  @Option(name = "-W", usage = "input/output path for working files", required = false)
+  //@Option(name = "-W", usage = "input/output path for working files", required = false)
   public void setWorkingRoot( String workingRoot )
     {
     this.workingRoot = workingRoot;
@@ -270,7 +656,7 @@ public class Options
     return makePathDir( statsRoot );
     }
 
-  @Option(name = "-S", usage = "output path for job stats", required = false)
+  //@Option(name = "-S", usage = "output path for job stats", required = false)
   public void setStatsRoot( String statsRoot )
     {
     this.statsRoot = statsRoot;
@@ -281,7 +667,7 @@ public class Options
     return cleanWorkFiles;
     }
 
-  @Option(name = "-CWF", usage = "clean work files", required = false)
+  //@Option(name = "-CWF", usage = "clean work files", required = false)
   public void setCleanWorkFiles( boolean cleanWorkFiles )
     {
     this.cleanWorkFiles = cleanWorkFiles;
@@ -292,7 +678,7 @@ public class Options
     return childVMOptions;
     }
 
-  @Option(name = "-CVMO", usage = "child JVM options", required = false)
+  //@Option(name = "-CVMO", usage = "child JVM options", required = false)
   public void setChildVMOptions( String childVMOptions )
     {
     this.childVMOptions = childVMOptions;
@@ -303,7 +689,7 @@ public class Options
     return maxConcurrentFlows;
     }
 
-  @Option(name = "-MXCF", usage = "maximum concurrent flows", required = false)
+  //@Option(name = "-MXCF", usage = "maximum concurrent flows", required = false)
   public void setMaxConcurrentFlows( int maxConcurrentFlows )
     {
     // Treat as "default" setting
@@ -317,7 +703,7 @@ public class Options
     return maxConcurrentSteps;
     }
 
-  @Option(name = "-MXCS", usage = "maximum concurrent steps", required = false)
+  //@Option(name = "-MXCS", usage = "maximum concurrent steps", required = false)
   public void setMaxConcurrentSteps( int maxConcurrentSteps )
     {
     // Treat as "default" setting
@@ -343,7 +729,7 @@ public class Options
     return runAllLoads;
     }
 
-  @Option(name = "-ALL", usage = "run all available (non-discrete) loads", required = false)
+  //@Option(name = "-ALL", usage = "run all available (non-discrete) loads", required = false)
   public void setRunAllLoads( boolean runAllLoads )
     {
     this.runAllLoads = runAllLoads;
@@ -354,7 +740,7 @@ public class Options
     return localMode;
     }
 
-  @Option(name = "-LM", usage = "use the local platform", required = false)
+  //@Option(name = "-LM", usage = "use the local platform", required = false)
   public void setLocalMode( boolean localMode )
     {
     this.localMode = localMode;
@@ -367,7 +753,7 @@ public class Options
     return dataGenerate;
     }
 
-  @Option(name = "-g", aliases = {"--generate"}, usage = "generate test data", required = false)
+  //@Option(name = "-g", aliases = {"--generate"}, usage = "generate test data", required = false)
   public void setDataGenerate( boolean dataGenerate )
     {
     this.dataGenerate = dataGenerate;
@@ -378,7 +764,7 @@ public class Options
     return dataNumFiles;
     }
 
-  @Option(name = "-gf", aliases = {"--generate-num-files"}, usage = "num files to create", required = false)
+  //@Option(name = "-gf", aliases = {"--generate-num-files"}, usage = "num files to create", required = false)
   public void setDataNumFiles( int dataNumFiles )
     {
     this.dataNumFiles = dataNumFiles;
@@ -389,7 +775,7 @@ public class Options
     return dataFileSizeMB;
     }
 
-  @Option(name = "-gs", aliases = {"--generate-file-size"}, usage = "size in MB of each file", required = false)
+  //@Option(name = "-gs", aliases = {"--generate-file-size"}, usage = "size in MB of each file", required = false)
   public void setDataFileSizeMB( float dataFileSizeMB )
     {
     this.dataFileSizeMB = dataFileSizeMB;
@@ -400,7 +786,7 @@ public class Options
     return dataMaxWords;
     }
 
-  @Option(name = "-gmax", aliases = {"--generate-max-words"}, usage = "max words per line, inclusive", required = false)
+  //@Option(name = "-gmax", aliases = {"--generate-max-words"}, usage = "max words per line, inclusive", required = false)
   public void setDataMaxWords( int dataMaxWords )
     {
     this.dataMaxWords = dataMaxWords;
@@ -411,7 +797,7 @@ public class Options
     return dataMinWords;
     }
 
-  @Option(name = "-gmin", aliases = {"--generate-min-words"}, usage = "min words per line, inclusive", required = false)
+  //@Option(name = "-gmin", aliases = {"--generate-min-words"}, usage = "min words per line, inclusive", required = false)
   public void setDataMinWords( int dataMinWords )
     {
     this.dataMinWords = dataMinWords;
@@ -422,7 +808,7 @@ public class Options
     return dataWordDelimiter;
     }
 
-  @Option(name = "-gd", aliases = {"--generate-word-delimiter"}, usage = "delimiter for words", required = false)
+  //@Option(name = "-gd", aliases = {"--generate-word-delimiter"}, usage = "delimiter for words", required = false)
   public void setDataWordDelimiter( String dataWordDelimiter )
     {
     this.dataWordDelimiter = dataWordDelimiter;
@@ -433,7 +819,7 @@ public class Options
     return fillBlocksPerFile;
     }
 
-  @Option(name = "-gbf", aliases = {"--generate-blocks-per-file"}, usage = "fill num blocks per file", required = false)
+  //@Option(name = "-gbf", aliases = {"--generate-blocks-per-file"}, usage = "fill num blocks per file", required = false)
   public void setFillBlocksPerFile( int fillBlocksPerFile )
     {
     this.fillBlocksPerFile = fillBlocksPerFile;
@@ -444,8 +830,7 @@ public class Options
     return fillFilesPerAvailMapper;
     }
 
-  @Option(name = "-gfm", aliases = {
-    "--generate-files-per-mapper"}, usage = "fill num files per available mapper", required = false)
+  //@Option(name = "-gfm", aliases = {"--generate-files-per-mapper"}, usage = "fill num files per available mapper", required = false)
   public void setFillFilesPerAvailMapper( int fillFilesPerAvailMapper )
     {
     this.fillFilesPerAvailMapper = fillFilesPerAvailMapper;
@@ -459,8 +844,7 @@ public class Options
     return dataMeanWords;
     }
 
-  @Option(name = "-gwm", aliases = {
-    "--generate-words-mean"}, usage = "mean modifier [-1,1] of a normal distribution from dictionary", required = false)
+  //@Option(name = "-gwm", aliases = {"--generate-words-mean"}, usage = "mean modifier [-1,1] of a normal distribution from dictionary", required = false)
   public void setDataMeanWords( float dataMeanWords )
     {
     if( dataMeanWords < -1 )
@@ -475,8 +859,7 @@ public class Options
     return dataStddevWords;
     }
 
-  @Option(name = "-gws", aliases = {
-    "--generate-words-stddev"}, usage = "standard-deviation modifier (0,1) of a normal distribution from dictionary", required = false)
+  //@Option(name = "-gws", aliases = {"--generate-words-stddev"}, usage = "standard-deviation modifier (0,1) of a normal distribution from dictionary", required = false)
   public void setDataStddevWords( float dataStddevWords )
     {
     if( dataStddevWords < MIN_DATA_STDDEV )
@@ -501,7 +884,7 @@ public class Options
     return dataConsume;
     }
 
-  @Option(name = "-cd", aliases = {"--consume"}, usage = "consume test data", required = false)
+  //@Option(name = "-cd", aliases = {"--consume"}, usage = "consume test data", required = false)
   public void setDataConsume( boolean dataConsume )
     {
     this.dataConsume = dataConsume;
@@ -514,7 +897,7 @@ public class Options
     return countSort;
     }
 
-  @Option(name = "-c", aliases = {"--count-sort"}, usage = "run count sort load", required = false)
+  //@Option(name = "-c", aliases = {"--count-sort"}, usage = "run count sort load", required = false)
   public void setCountSort( boolean countSort )
     {
     this.countSort = countSort;
@@ -525,7 +908,7 @@ public class Options
     return staggeredSort;
     }
 
-  @Option(name = "-ss", aliases = {"--staggered-sort"}, usage = "run staggered compare sort load", required = false)
+  //@Option(name = "-ss", aliases = {"--staggered-sort"}, usage = "run staggered compare sort load", required = false)
   public void setStaggeredSort( boolean staggeredSort )
     {
     this.staggeredSort = staggeredSort;
@@ -536,7 +919,7 @@ public class Options
     return fullTupleGroup;
     }
 
-  @Option(name = "-fg", aliases = {"--full-group"}, usage = "run full tuple grouping load", required = false)
+  //@Option(name = "-fg", aliases = {"--full-group"}, usage = "run full tuple grouping load", required = false)
   public void setFullTupleGroup( boolean fullTupleGroup )
     {
     this.fullTupleGroup = fullTupleGroup;
@@ -549,7 +932,7 @@ public class Options
     return multiJoin;
     }
 
-  @Option(name = "-m", aliases = {"--multi-join"}, usage = "run multi join load", required = false)
+  //@Option(name = "-m", aliases = {"--multi-join"}, usage = "run multi join load", required = false)
   public void setMultiJoin( boolean multiJoin )
     {
     this.multiJoin = multiJoin;
@@ -560,7 +943,7 @@ public class Options
     return innerJoin;
     }
 
-  @Option(name = "-ij", aliases = {"--inner-join"}, usage = "run inner join load", required = false)
+  //@Option(name = "-ij", aliases = {"--inner-join"}, usage = "run inner join load", required = false)
   public void setInnerJoin( boolean innerJoin )
     {
     this.innerJoin = innerJoin;
@@ -571,7 +954,7 @@ public class Options
     return outerJoin;
     }
 
-  @Option(name = "-oj", aliases = {"--outer-join"}, usage = "run outer join load", required = false)
+  //@Option(name = "-oj", aliases = {"--outer-join"}, usage = "run outer join load", required = false)
   public void setOuterJoin( boolean outerJoin )
     {
     this.outerJoin = outerJoin;
@@ -582,7 +965,7 @@ public class Options
     return leftJoin;
     }
 
-  @Option(name = "-lj", aliases = {"--left-join"}, usage = "run left join load", required = false)
+  //@Option(name = "-lj", aliases = {"--left-join"}, usage = "run left join load", required = false)
   public void setLeftJoin( boolean leftJoin )
     {
     this.leftJoin = leftJoin;
@@ -593,7 +976,7 @@ public class Options
     return rightJoin;
     }
 
-  @Option(name = "-rj", aliases = {"--right-join"}, usage = "run right join load", required = false)
+  //@Option(name = "-rj", aliases = {"--right-join"}, usage = "run right join load", required = false)
   public void setRightJoin( boolean rightJoin )
     {
     this.rightJoin = rightJoin;
@@ -606,7 +989,7 @@ public class Options
     return pipeline;
     }
 
-  @Option(name = "-p", aliases = {"--pipeline"}, usage = "run pipeline load", required = false)
+  //@Option(name = "-p", aliases = {"--pipeline"}, usage = "run pipeline load", required = false)
   public void setPipeline( boolean pipeline )
     {
     this.pipeline = pipeline;
@@ -617,8 +1000,7 @@ public class Options
     return hashModulo;
     }
 
-  @Option(name = "-pm", aliases = {
-    "--pipeline-hash-modulo"}, usage = "hash modulo for managing key distribution", required = false)
+  //@Option(name = "-pm", aliases = {"--pipeline-hash-modulo"}, usage = "hash modulo for managing key distribution", required = false)
   public void setHashModulo( int hashModulo )
     {
     this.hashModulo = hashModulo;
@@ -629,7 +1011,7 @@ public class Options
     return chainedAggregate;
     }
 
-  @Option(name = "-ca", aliases = {"--chained-aggregate"}, usage = "run chained aggregate load", required = false)
+  //@Option(name = "-ca", aliases = {"--chained-aggregate"}, usage = "run chained aggregate load", required = false)
   public void setChainedAggregate( boolean chainedAggregate )
     {
     this.chainedAggregate = chainedAggregate;
@@ -640,7 +1022,7 @@ public class Options
     return chainedFunction;
     }
 
-  @Option(name = "-cf", aliases = {"--chained-function"}, usage = "run chained function load", required = false)
+  //@Option(name = "-cf", aliases = {"--chained-function"}, usage = "run chained function load", required = false)
   public void setChainedFunction( boolean chainedFunction )
     {
     this.chainedFunction = chainedFunction;
@@ -651,7 +1033,7 @@ public class Options
     return writeDotFile;
     }
 
-  @Option(name = "-wd", aliases = {"--write-dot"}, usage = "write DOT file", required = false)
+  //@Option(name = "-wd", aliases = {"--write-dot"}, usage = "write DOT file", required = false)
   public void setWriteDotFile( boolean writeDotFile )
     {
     this.writeDotFile = writeDotFile;
