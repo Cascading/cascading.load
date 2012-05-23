@@ -119,6 +119,12 @@ public class Options
 
       line.append( "</code></td><td>" );
       line.append( this.description );
+
+      if( this.arg_class != null )
+        {
+        line.append( "</td><td>requires argument" );
+        }
+
       line.append( "</td></tr>" );
 
       return line.toString();
