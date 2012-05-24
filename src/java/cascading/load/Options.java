@@ -121,9 +121,9 @@ public class Options
       line.append( this.description );
 
       if( this.arg_class != null )
-        {
         line.append( "</td><td>requires argument" );
-        }
+      else
+        line.append( "</td><td>" );
 
       line.append( "</td></tr>" );
 
@@ -468,6 +468,7 @@ public class Options
 
     System.out.println( "" );
     printCascadingVersion();
+    System.out.println( "" );
     printLicense();
     }
 
