@@ -302,31 +302,15 @@ public class Main
     try
       {
       options.parseArgs( args );
-      System.exit( 0 );
       }
     catch( Exception e )
       {
-      System.out.print( "error: " );
+      System.out.print( "options error: " );
       System.out.println( e.getMessage() );
 
       options.printUsage( false );
       System.exit( 1 );
       }
-
-    /*
-     CmdLineParser parser = new CmdLineParser( options );
-
-     try
-       {
-       parser.parseArgument( args );
-       }
-     catch( CmdLineException exception )
-       {
-       System.out.print( "error: " );
-       System.out.println( exception.getMessage() );
-       options.printUsageAndExit( parser, false );
-       }
-     */
 
     options.prepare();
 

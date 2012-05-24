@@ -71,7 +71,7 @@ public class Options
 
   private class OptionGlyph
     {
-    Collection<String> opt_param;
+    List<String> opt_param;
     Collection<String> opt_names;
     String method_name;
     Class arg_class;
@@ -79,7 +79,7 @@ public class Options
     boolean multi_value;
     String description;
 
-    OptionGlyph( Collection<String> opt_param, String method_name, Class arg_class, boolean is_required, boolean multi_value, String description )
+    OptionGlyph( List<String> opt_param, String method_name, Class arg_class, boolean is_required, boolean multi_value, String description )
       {
       option_list.add( this );
 
@@ -95,9 +95,6 @@ public class Options
 
       if( this.arg_class != null )
         osb.withRequiredArg().ofType( this.arg_class );
-
-      if( this.is_required )
-        osb.isRequired();
       }
 
 
@@ -131,7 +128,7 @@ public class Options
       }
 
 
-    boolean attempt( OptionSet opts )
+    boolean attempt( OptionSet opts ) throws Exception
       {
       for( String opt_name : this.opt_names )
         {
@@ -181,7 +178,10 @@ public class Options
           }
         }
 
-      return false;
+      if( this.is_required )
+        throw new Exception( "The " + this.opt_param.get( 0 ) + " option is required" );
+      else
+        return false;
       }
     }
 
@@ -311,7 +311,7 @@ public class Options
     }
 
 
-  public void parseArgs( String[] args )
+  public void parseArgs( String[] args ) throws Exception
     {
     OptionSet opts = this.parser.parse( args );
 
