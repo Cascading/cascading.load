@@ -336,6 +336,11 @@ public class Options
         {
         ( (OptionGlyph) obj ).attempt( opts );
         }
+
+      if ( !( this.runAllLoads || this.dataGenerate || this.dataConsume || this.countSort || this.staggeredSort || this.fullTupleGroup || this.multiJoin || this.innerJoin || this.outerJoin || this.leftJoin || this.rightJoin || this.pipeline || this.chainedAggregate || this.chainedFunction ) )
+        {
+        throw new Exception( "At least one flow must be selected, to run Load" );
+        }
       }
     }
 
@@ -430,14 +435,17 @@ public class Options
 
       System.out.println( "    cascading.load [param] [param] ..." );
       System.out.println( "" );
+      System.out.println( "At least one flow must be selected, to run Load" );
+      System.out.println( "" );
       System.out.println( "<table>" );
       }
     else
       {
-      System.out.println( "cascading.load [options...]" );
-
-      System.out.println( "" );
       System.out.println( "Usage:" );
+      System.out.println( "" );
+      System.out.println( "cascading.load [param] [param] ..." );
+      System.out.println( "" );
+      System.out.println( "At least one flow must be selected, to run Load" );
       System.out.println( "" );
       }
 

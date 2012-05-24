@@ -307,13 +307,13 @@ public class Main
       {
       System.out.print( "options error: " );
       System.out.println( e.getMessage() );
+      System.out.println( "" );
 
       options.printUsage( false );
       System.exit( 1 );
       }
 
     options.prepare();
-
     LOG.info( options );
 
     return options;

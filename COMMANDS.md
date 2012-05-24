@@ -2,6 +2,8 @@ Load - Command Line Reference
 =============================
     cascading.load [param] [param] ...
 
+At least one flow must be selected, to run Load
+
 <table>
 <tr><td><code>-h|--help</code></td><td>print this help text</td><td></td></tr>
 <tr><td><code>--markdown</code></td><td>generate help text as GitHub Flavored Markdown</td><td></td></tr>
