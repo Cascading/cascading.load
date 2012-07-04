@@ -23,7 +23,7 @@ if( System.properties[ 'aws.properties' ] )
   }
 }
 
-timestamp = new SimpleDateFormat( "yyyyMMdd" ).format( new Date() )
+ext.timestamp = new SimpleDateFormat( "yyyyMMdd" ).format( new Date() )
 
 configurations {
   sshAntTask
@@ -110,11 +110,11 @@ jar {
 
 task distCopy( type: Copy, dependsOn: jar ) {
 
-  into "${buildDir}/dist/${archivesBaseName}"
+  into "${buildDir}/dist/${archivesBaseName}-${timestamp}"
 
   from 'README.TXT'
   from 'build.gradle'
-  from( 'src' ) {into 'src'}
+  from( 'bin' ) {into 'bin'}
 
   from "$buildDir/libs"
 }
@@ -129,11 +129,11 @@ task dist( type: Tar, dependsOn: distCopy ) {
 
 task s3Upload( dependsOn: dist ) {
 
-  awsAccessId = System.properties[ 'publish.aws.accessId' ]
-  awsSecretKey = System.properties[ 'publish.aws.secretKey' ]
-  s3Bucket = System.properties[ 'publish.bucket' ]
+  ext.awsAccessId = System.properties[ 'publish.aws.accessId' ]
+  ext.awsSecretKey = System.properties[ 'publish.aws.secretKey' ]
+  ext.s3Bucket = System.properties[ 'publish.bucket' ]
 
-  remotePath = 'load/2.0/'
+  ext.remotePath = 'load/2.0/'
 }
 
 s3Upload << {
