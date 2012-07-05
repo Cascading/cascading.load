@@ -228,6 +228,7 @@ public class Options
   float dataStddevWords = -1;
   boolean dataConsume = false;
 
+  boolean certifyTests;
   boolean countSort;
   boolean staggeredSort;
   boolean fullTupleGroup;
@@ -293,6 +294,7 @@ public class Options
     glyph = new OptionGlyph( Arrays.asList( "-gwm", "--generate-words-mean" ), "setDataMeanWords", float.class, false, false, "mean modifier [-1,1] of a normal distribution from dictionary" );
     glyph = new OptionGlyph( Arrays.asList( "-gws", "--generate-words-stddev" ), "setDataStddevWords", float.class, false, false, "standard-deviation modifier (0,1) of a normal distribution from dictionary" );
     glyph = new OptionGlyph( Arrays.asList( "-cd", "--consume" ), "setDataConsume", null, false, false, "consume test data" );
+    glyph = new OptionGlyph( Arrays.asList( "-s", "--certify-tests" ), "setCertifyTests", null, false, false, "run certification tests" );
     glyph = new OptionGlyph( Arrays.asList( "-c", "--count-sort" ), "setCountSort", null, false, false, "run count sort load" );
     glyph = new OptionGlyph( Arrays.asList( "-ss", "--staggered-sort" ), "setStaggeredSort", null, false, false, "run staggered compare sort load" );
     glyph = new OptionGlyph( Arrays.asList( "-fg", "--full-group" ), "setFullTupleGroup", null, false, false, "run full tuple grouping load" );
@@ -335,7 +337,7 @@ public class Options
         ( (OptionGlyph) obj ).attempt( opts );
         }
 
-      if( !( this.runAllLoads || this.dataGenerate || this.dataConsume || this.countSort || this.staggeredSort || this.fullTupleGroup || this.multiJoin || this.innerJoin || this.outerJoin || this.leftJoin || this.rightJoin || this.pipeline || this.chainedAggregate || this.chainedFunction ) )
+      if ( !( this.runAllLoads || this.dataGenerate || this.dataConsume || this.countSort || this.certifyTests || this.staggeredSort || this.fullTupleGroup || this.multiJoin || this.innerJoin || this.outerJoin || this.leftJoin || this.rightJoin || this.pipeline || this.chainedAggregate || this.chainedFunction ) )
         {
         throw new Exception( "At least one flow must be selected, to run Load" );
         }
@@ -904,7 +906,16 @@ public class Options
     }
 
   ////////////////////////////////////////
+  public boolean isCertifyTests()
+  {
+  return certifyTests;
+  }
+  public void setCertifyTests( boolean certifyTests )
+  {
+  this.certifyTests = certifyTests;
+  }
 
+//@Option(name = "-ct", aliases = {"--certify Tests"}, usage = "run certification tests", required = false)
   public boolean isCountSort()
     {
     return countSort;
@@ -1065,6 +1076,14 @@ public class Options
       setPipeline( true );
       }
 
+    if( isCertifyTests() )
+    {
+    setDataGenerate( true );
+    setCountSort( true );
+    setMultiJoin( true );
+    setPipeline( true );
+    }
+
     if( numDefaultMappers == -1 && percentMaxMappers != 0 )
       numDefaultMappers = (int) ( Util.getMaxConcurrentMappers() * percentMaxMappers );
 
@@ -1106,6 +1125,8 @@ public class Options
       loads.append( "dataConsume," );
     if( pipeline )
       loads.append( "pipeline," );
+    if( certifyTests )
+        loads.append( "certifyTests," );
     if( countSort )
       loads.append( "countSort," );
     if( multiJoin )
@@ -1174,6 +1195,7 @@ public class Options
     sb.append( ", dataMeanWords=" ).append( dataMeanWords );
     sb.append( ", dataStddevWords=" ).append( dataStddevWords );
     sb.append( ", dataConsume=" ).append( dataConsume );
+    sb.append( ", certifyTests=" ).append( certifyTests );
     sb.append( ", countSort=" ).append( countSort );
     sb.append( ", staggeredSort=" ).append( staggeredSort );
     sb.append( ", fullTupleGroup=" ).append( fullTupleGroup );

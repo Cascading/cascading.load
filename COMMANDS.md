@@ -41,6 +41,7 @@ At least one flow must be selected, to run Load
 <tr><td><code>-gwm|--generate-words-mean</code></td><td>mean modifier [-1,1] of a normal distribution from dictionary</td><td>requires argument</td></tr>
 <tr><td><code>-gws|--generate-words-stddev</code></td><td>standard-deviation modifier (0,1) of a normal distribution from dictionary</td><td>requires argument</td></tr>
 <tr><td><code>-cd|--consume</code></td><td>consume test data</td><td></td></tr>
+<tr><td><code>-s|--certify-tests</code></td><td>run certification tests</td><td></td></tr>
 <tr><td><code>-c|--count-sort</code></td><td>run count sort load</td><td></td></tr>
 <tr><td><code>-ss|--staggered-sort</code></td><td>run staggered compare sort load</td><td></td></tr>
 <tr><td><code>-fg|--full-group</code></td><td>run full tuple grouping load</td><td></td></tr>
