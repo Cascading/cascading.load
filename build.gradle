@@ -112,8 +112,9 @@ task distCopy( type: Copy, dependsOn: jar ) {
 
   into "${buildDir}/dist/${archivesBaseName}-${timestamp}"
 
-  from 'README.TXT'
-  from 'build.gradle'
+  from 'README.md'
+  from 'COMMANDS.md'
+  from 'apl.txt'
   from( 'bin' ) {into 'bin'}
 
   from "$buildDir/libs"
