@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2012 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.concurrentinc.com/
  */
@@ -15,19 +15,23 @@ import cascading.load.countsort.CountSort;
 import cascading.load.generate.GenerateData;
 import cascading.load.join.MultiJoin;
 import cascading.load.pipeline.Pipeline;
+import cascading.test.HadoopPlatform;
+import cascading.test.PlatformRunner;
+import org.junit.Test;
 
 /**
  *
  */
+@PlatformRunner.Platform({HadoopPlatform.class})
 public class AllLoadsTest extends LoadTestCase
   {
   String output = "build/test/output/load/";
 
   public AllLoadsTest()
     {
-    super();
     }
 
+  @Test
   public void testAllLoads() throws Exception
     {
     String output = this.output + "api/";
@@ -47,8 +51,8 @@ public class AllLoadsTest extends LoadTestCase
 
     generateFlow.complete();
 
-    assertEquals( 6, new File( generate.getInputPaths()[ 0 ] ).list().length );
-    assertEquals( 6, new File( generate.getOutputPaths()[ 0 ] ).list().length );
+    assertEquals( generate.getInputPaths()[ 0 ], 6, new File( generate.getInputPaths()[ 0 ] ).list().length );
+    assertEquals( generate.getOutputPaths()[ 0 ], 8, new File( generate.getOutputPaths()[ 0 ] ).list().length ); // includes _SUCCESS and its crc
 
     options.setCountSort( true );
 
@@ -58,7 +62,7 @@ public class AllLoadsTest extends LoadTestCase
 
     countSortFlow.complete();
 
-    assertEquals( 2, new File( countSort.getOutputPaths()[ 0 ] ).list().length );
+    assertEquals( countSort.getOutputPaths()[ 0 ], 4, new File( countSort.getOutputPaths()[ 0 ] ).list().length );
 
     MultiJoin multiJoin = new MultiJoin( options, getProperties() );
 
@@ -66,10 +70,10 @@ public class AllLoadsTest extends LoadTestCase
 
     multiJoinFlow.complete();
 
-    assertEquals( 2, new File( multiJoin.getOutputPaths()[ 0 ] ).list().length );
-    assertEquals( 2, new File( multiJoin.getOutputPaths()[ 1 ] ).list().length );
-    assertEquals( 2, new File( multiJoin.getOutputPaths()[ 2 ] ).list().length );
-    assertEquals( 2, new File( multiJoin.getOutputPaths()[ 3 ] ).list().length );
+    assertEquals( multiJoin.getOutputPaths()[ 0 ], 4, new File( multiJoin.getOutputPaths()[ 0 ] ).list().length );
+    assertEquals( multiJoin.getOutputPaths()[ 1 ], 4, new File( multiJoin.getOutputPaths()[ 1 ] ).list().length );
+    assertEquals( multiJoin.getOutputPaths()[ 2 ], 4, new File( multiJoin.getOutputPaths()[ 2 ] ).list().length );
+    assertEquals( multiJoin.getOutputPaths()[ 3 ], 4, new File( multiJoin.getOutputPaths()[ 3 ] ).list().length );
 
     Pipeline pipeline = new Pipeline( options, getProperties() );
 
@@ -77,9 +81,10 @@ public class AllLoadsTest extends LoadTestCase
 
     pipelineFlow.complete();
 
-    assertEquals( 2, new File( pipeline.getOutputPaths()[ 0 ] ).list().length );
+    assertEquals( pipeline.getOutputPaths()[ 0 ], 4, new File( pipeline.getOutputPaths()[ 0 ] ).list().length );
     }
 
+  @Test
   public void testMain() throws Exception
     {
     String output = this.output + "main/";
@@ -106,6 +111,7 @@ public class AllLoadsTest extends LoadTestCase
     assertEquals( 6, new File( output + "output" ).list().length );
     }
 
+  @Test
   public void testCleanWorkFiles() throws Exception
     {
     String output = this.output + "maincwf/";
@@ -134,6 +140,7 @@ public class AllLoadsTest extends LoadTestCase
     assertEquals( 1, new File( output ).list().length );
     }
 
+  @Test
   public void testSingleLineStatus() throws Exception
     {
     String output = this.output + "mainsls/";
@@ -168,6 +175,7 @@ public class AllLoadsTest extends LoadTestCase
     assertEquals( 15, lineNo );
     }
 
+  @Test
   public void testAllDiscreteFlows() throws Exception
     {
     String output = this.output + "mainadf/";
@@ -199,5 +207,4 @@ public class AllLoadsTest extends LoadTestCase
 
     assertEquals( 8, new File( output + "output" ).list().length );
     }
-
   }

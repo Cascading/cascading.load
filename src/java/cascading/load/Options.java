@@ -23,8 +23,6 @@ import joptsimple.OptionSet;
 import joptsimple.OptionSpecBuilder;
 import org.apache.log4j.Logger;
 
-import static joptsimple.util.DateConverter.*;
-
 //import org.kohsuke.args4j.Option;
 
 
@@ -337,7 +335,7 @@ public class Options
         ( (OptionGlyph) obj ).attempt( opts );
         }
 
-      if ( !( this.runAllLoads || this.dataGenerate || this.dataConsume || this.countSort || this.staggeredSort || this.fullTupleGroup || this.multiJoin || this.innerJoin || this.outerJoin || this.leftJoin || this.rightJoin || this.pipeline || this.chainedAggregate || this.chainedFunction ) )
+      if( !( this.runAllLoads || this.dataGenerate || this.dataConsume || this.countSort || this.staggeredSort || this.fullTupleGroup || this.multiJoin || this.innerJoin || this.outerJoin || this.leftJoin || this.rightJoin || this.pipeline || this.chainedAggregate || this.chainedFunction ) )
         {
         throw new Exception( "At least one flow must be selected, to run Load" );
         }
@@ -382,7 +380,7 @@ public class Options
       else if( releaseBuild == null )
         releaseFull = String.format( "%s.%s", releaseMajor, releaseMinor );
       else
-        releaseFull = String.format( "%s.%s%s", releaseMajor, releaseMinor, releaseBuild );
+        releaseFull = String.format( "%s.%s-%s", releaseMajor, releaseMinor, releaseBuild );
 
       System.out.println( String.format( "Using Cascading %s", releaseFull ) );
       }

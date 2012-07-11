@@ -6,7 +6,6 @@
 
 package cascading.load;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -51,14 +50,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-
-//import org.kohsuke.args4j.CmdLineException;
-//import org.kohsuke.args4j.CmdLineParser;
-
-import joptsimple.OptionException;
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
-
 
 /**
  *

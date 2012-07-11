@@ -16,7 +16,7 @@ Flags:
   -v|--version - specify the version of Cascading.Load to fetch
 USAGE
 
-cl_update_base_url="http://files.cascading.org/cascading.load"
+cl_update_base_url="http://files.cascading.org/load/2.0"
 
 cl_update_create_temp ()
 {
@@ -43,7 +43,7 @@ cl_update_curl ()
       module_exit "curl was not found in PATH"
     fi
   fi
-  
+
   if [ -n "$cl_log_verbose" ]
   then
     $CURL_BIN --progress-bar $@
@@ -66,10 +66,10 @@ cl_update_parse_latest ()
   do
     case "$1" in
       --version=*)
-        cl_update_latest=$cl_update_base_url/cascading.load-`echo $1 | sed 's/--version=\(.*\)/\1/g'`.tgz
+        cl_update_latest=$cl_update_base_url/load-`echo $1 | sed 's/--version=\(.*\)/\1/g'`.tgz
         ;;
       -v|--version)
-        cl_update_latest=$cl_update_base_url/cascading.load-$2.tgz
+        cl_update_latest=$cl_update_base_url/load-$2.tgz
         break 1
         ;;
       *)
@@ -81,13 +81,13 @@ cl_update_parse_latest ()
 
   if [ -z "$cl_update_latest" ]
   then
-    info "INFO Parsing version number from $cl_update_base_url/cascading.load-current.txt"
-    cl_update_latest=`cl_update_curl $cl_update_base_url/cascading.load-current.txt | grep "$cl_update_base_url.*\.tgz" | sed 's|^\([^ ]*://[^ ]*\).*|\1|g' | head -n1`
+    info "INFO Parsing latest release location from $cl_update_base_url/latest.txt"
+    cl_update_latest=`cl_update_curl $cl_update_base_url/latest.txt | grep "$cl_update_base_url.*\.tgz" | sed 's|^\([^ ]*://[^ ]*\).*|\1|g' | head -n1`
   fi
 
   if [ -z "$cl_update_latest" ]
   then
-    module_exit "Cannot get latest cascading.load from $cl_update_base_url/cascading.load-current.txt"
+    module_exit "Cannot get latest Load from $cl_update_base_url/latest.txt"
   fi
 }
 

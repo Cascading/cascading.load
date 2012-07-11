@@ -13,7 +13,7 @@ Usage:
 
 Options:
   -d|--destination     - specifies the install destination
-                         defaults to /usr/local/lib/cascading.load (as root/sudo)
+                         defaults to /usr/local/lib/load (as root/sudo)
                          defaults to $HOME/.cascading.load (as user)
   -b|--bin-destination - specifies the destination for executable files
                          defaults to /usr/local/bin
@@ -21,16 +21,16 @@ Options:
 USAGE
 
 cl_install_dirs="bin"
-cl_install_bin="bin/cascading.load"
-cl_install_bin_links="cascading.load"
-cl_install_files="README.txt LICENSE.txt"
+cl_install_bin="bin/load"
+cl_install_bin_links="load"
+cl_install_files="README.md apl.txt"
 
 if [ "$UID" = "0" ]
 then
-  cl_install_destination=/usr/local/lib/cascding.load
+  cl_install_destination=/usr/local/lib/load
   cl_install_bin_destination=/usr/local/bin
 else
-  cl_install_destination=$HOME/.cascading.load
+  cl_install_destination=$HOME/.load
   cl_install_bin_destination=
 fi
 

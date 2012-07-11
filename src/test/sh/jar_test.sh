@@ -11,7 +11,7 @@ before () {
   HADOOP_HOME=$TMP_HADOOP
 
   TMP_JAR=`mktemp -dt cl_jar-spec.XXXXXX`
-  touch $TMP_JAR/cascading.load-test.jar
+  touch $TMP_JAR/load-test.jar
 
   module_depends jar
 }
@@ -43,15 +43,15 @@ it_runs_silently_if_it_finds_multitool_jar () {
   cl_jar
 
   test "$tested" = "true"
-  test "$cl_jar_path" = "$TMP_JAR/cascading.load-test.jar"
+  test "$cl_jar_path" = "$TMP_JAR/load-test.jar"
 }
 
 it_complains_if_it_cannot_find_multitool_jar () {
-  rm $TMP_JAR/cascading.load-test.jar
+  rm $TMP_JAR/load-test.jar
   CT_PATH=$TMP_JAR
 
   module_exit () {
-    [ "$*" = "cascading.load.jar not found" ] && tested=true
+    [ "$*" = "load.jar not found" ] && tested=true
   }
 
   cl_jar

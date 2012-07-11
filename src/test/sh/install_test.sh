@@ -22,5 +22,5 @@ it_has_usage () {
 }
 
 it_sets_the_install_destination () {
-  test "$cl_install_destination" = "$HOME/.cascading.load"
+  test "$cl_install_destination" = "$HOME/.load"
 }

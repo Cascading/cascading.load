@@ -9,9 +9,9 @@ This is the Cascading.Load (Load) application.
 Load provides a simple command line interface for building high load
 cluster jobs, based on Cascading.
 
-Cascading is a feature rich API for defining and executing complex,
-scale-free, and fault tolerant data processing workflows on a Hadoop
-cluster. It can be found at http://www.cascading.org/
+Cascading is an application framework for Java developers to quickly
+and easily develop robust Data Analytics and Data Management applications
+on Apache Hadoop. It can be found at http://www.cascading.org/
 
 Installing
 ----------
@@ -22,26 +22,26 @@ distribution.
 
 To see if Load has already been added to your PATH, type:
 
-    $ which cascading.load
+    $ which load
 
 To install for all users into `/usr/local/bin`:
 
-    $ sudo ./bin/cascading.load install
+    $ sudo ./bin/load install
 
-or for the current user only into `~/.cascading.load`:
+or for the current user only into `~/.load`:
 
-    $ ./bin/cascading.load install
+    $ ./bin/load install
 
 For detailed instructions:
 
-    $ ./bin/cascading.load help install
+    $ ./bin/load help install
 
 Choose the method that best suites your environment.
 
-If you are running Load on AWS Elastic MapReduce, you need to follow the 
+If you are running Load on AWS Elastic MapReduce, you need to follow the
 [Elastic MapReduce instructions](https://aws.amazon.com/elasticmapreduce/#details)
-on the AWS site, which typically expect the 
-`cascading.load-<release-date>.jar` to be uploaded to AWS S3.
+on the AWS site, which typically expect the
+`load-<release-date>.jar` to be uploaded to AWS S3.
 
 Using
 -----
@@ -51,11 +51,11 @@ Cascading.Load.
 
 To run from the command line with the jar, Hadoop should be in the path:
 
-    $ hadoop jar cascading.load-<release-date>.jar <args>
+    $ hadoop jar load-<release-date>.jar <args>
 
 or if Load has been installed from above:
 
-    $ cascading.load <args>
+    $ load <args>
 
 If no args are given, a comprehensive list of commands will be
 printed. That list is also available as `COMMANDS.md` in this

@@ -6,11 +6,11 @@ cl_jar ()
 {
   if [ -z "$cl_jar_path" ]
   then
-    cl_jar_path=`find $CT_PATH -name cascading.load*.jar | head -n1`
+    cl_jar_path=`find $CT_PATH -name load*.jar | head -n1`
 
     if [ -z "$cl_jar_path" ]
     then
-      module_exit "cascading.load.jar not found"
+      module_exit "load.jar not found"
     fi
   fi
 }

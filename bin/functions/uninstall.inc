@@ -13,8 +13,8 @@ Usage:
 
 Options:
   -d|--destination     - specifies the install destination
-                         defaults to /usr/local/lib/cascading.load (as root/sudo)
-                         defaults to $HOME/.cascading.load (as user)
+                         defaults to /usr/local/lib/load (as root/sudo)
+                         defaults to $HOME/.load (as user)
   -b|--bin-destination - specifies the destination for executable files
                          defaults to /usr/local/bin
                          (only applies when running as root/sudo)

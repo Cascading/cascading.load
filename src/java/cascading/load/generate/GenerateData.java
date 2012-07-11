@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2011 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2012 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.concurrentinc.com/
  */
@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Properties;
 
 import cascading.flow.Flow;
+import cascading.flow.hadoop.HadoopFlowProcess;
 import cascading.load.Options;
 import cascading.load.common.Load;
 import cascading.load.util.Util;
@@ -20,7 +21,6 @@ import cascading.pipe.Each;
 import cascading.pipe.Pipe;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
-import cascading.flow.hadoop.HadoopFlowProcess;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntryCollector;
