@@ -43,15 +43,17 @@ repositories {
   mavenRepo name: 'apache', url: 'https://repository.apache.org/content/repositories/releases/'
 }
 
+ext.cascadingVersion = '2.0.2'
+
 dependencies {
-  compile( 'cascading:cascading-core:2.0.+' ) { exclude group: 'log4j' }
-  compile( 'cascading:cascading-hadoop:2.0.+' ) { transitive = false }
-  compile( 'cascading:cascading-local:2.0.+' ) { transitive = false }
+  compile( "cascading:cascading-core:${cascadingVersion}" ) { exclude group: 'log4j' }
+  compile( "cascading:cascading-hadoop:${cascadingVersion}" ) { transitive = false }
+  compile( "cascading:cascading-local:${cascadingVersion}" ) { transitive = false }
   compile( 'org.apache.hadoop:hadoop-core:1.0.+' ) { exclude group: 'ant' }
   compile( 'net.sf.jopt-simple:jopt-simple:4.3' )
   compile( 'log4j:log4j:1.2.16' )
 
-  testCompile( 'cascading:cascading-test:2.0.+' )
+  testCompile( "cascading:cascading-test:${cascadingVersion}" )
   testCompile( 'org.apache.hadoop:hadoop-test:1.0.+' )
   testCompile( 'junit:junit:4.8.+' )
 }
