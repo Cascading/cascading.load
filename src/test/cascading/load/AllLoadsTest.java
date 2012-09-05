@@ -15,14 +15,11 @@ import cascading.load.countsort.CountSort;
 import cascading.load.generate.GenerateData;
 import cascading.load.join.MultiJoin;
 import cascading.load.pipeline.Pipeline;
-import cascading.test.HadoopPlatform;
-import cascading.test.PlatformRunner;
 import org.junit.Test;
 
 /**
  *
  */
-@PlatformRunner.Platform({HadoopPlatform.class})
 public class AllLoadsTest extends LoadTestCase
   {
   String output = "build/test/output/load/";
