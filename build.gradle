@@ -43,7 +43,7 @@ repositories {
   mavenRepo name: 'apache', url: 'https://repository.apache.org/content/repositories/releases/'
 }
 
-ext.cascadingVersion = '2.1-wip-dev'
+ext.cascadingVersion = '2.1.+'
 ext.cascadingChanging = cascadingVersion.endsWith( ' -dev' );
 
 dependencies {
