@@ -27,8 +27,13 @@ if( System.properties[ 'aws.properties' ] )
 ext.timestamp = new SimpleDateFormat( "yyyyMMdd" ).format( new Date() )
 
 configurations {
+  providedCompile
   sshAntTask
   s3AntTask
+}
+
+sourceSets {
+  main.compileClasspath += configurations.providedCompile
 }
 
 dependencies {
@@ -48,16 +53,13 @@ ext.cascadingChanging = cascadingVersion.endsWith( ' -dev' );
 
 dependencies {
 
-  compile( group: 'cascading', name: 'cascading-core', version: cascadingVersion, changing: cascadingChanging ) {
-    exclude group: 'log4j'
-  }
-  compile( group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, changing: cascadingChanging ) {
-    transitive = false
-  }
+  compile( group: 'cascading', name: 'cascading-core', version: cascadingVersion, changing: cascadingChanging )
+
+  compile( group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, changing: cascadingChanging )
 
   compile( group: 'cascading', name: 'cascading-local', version: cascadingVersion, changing: cascadingChanging )
 
-  compile( 'org.apache.hadoop:hadoop-core:1.0.+' ) { exclude group: 'ant' }
+  providedCompile( 'org.apache.hadoop:hadoop-core:1.0.+' ) { exclude group: 'ant' }
   compile( 'net.sf.jopt-simple:jopt-simple:4.3' )
   compile( 'log4j:log4j:1.2.16' )
 
@@ -97,21 +99,8 @@ jar {
   version = timestamp
 
   doFirst {
-
-    def set = new HashSet()
-
-    def deps = configurations.compile.resolvedConfiguration.firstLevelModuleDependencies.findAll { dep ->
-      !dep.name.startsWith( 'org.apache.hadoop' ) && !dep.name.startsWith( 'log4j' )
-    }.collect { dep ->
-      dep.allModuleArtifacts.collect {
-        it.file
-      }
-    }
-
-    deps.each { col -> set.addAll( col )}
-
     into( 'lib' ) {
-      from( set )
+      from( configurations.compile )
     }
   }
 
