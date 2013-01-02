@@ -12,6 +12,8 @@ apply plugin: 'eclipse'
 
 project.archivesBaseName = 'load'
 
+ext.releaseMajor = '2.2'
+
 if( project.properties[ 'teamcity' ] ) // make them system properties
   System.properties.putAll( project.properties[ 'teamcity' ] )
 
@@ -136,7 +138,7 @@ task s3Upload( dependsOn: dist ) {
   ext.awsSecretKey = System.properties[ 'publish.aws.secretKey' ]
   ext.s3Bucket = System.properties[ 'publish.bucket' ]
 
-  ext.remotePath = 'load/2.1/'
+  ext.remotePath = "load/${releaseMajor}/"
 }
 
 s3Upload << {
@@ -176,9 +178,9 @@ task sitePublish( dependsOn: s3Upload ) << {
 
   def latestPath = new File( buildDir, 'latest.txt' )
 
-  latestPath.write( "http://${publishBucket}/load/2.1/${dist.archivePath.name}" )
+  latestPath.write( "http://${publishBucket}/load/${releaseMajor}/${dist.archivePath.name}" )
 
-  def remoteToFile = "${publishDownloadPath}/load/2.1/latest.txt"
+  def remoteToFile = "${publishDownloadPath}/load/${releaseMajor}/latest.txt"
 
   ant.scp( file: latestPath, remoteToFile: remoteToFile,
           keyfile: publishKeyFile, passphrase: '', port: publishPort, trust: 'true' )
@@ -187,9 +189,9 @@ task sitePublish( dependsOn: s3Upload ) << {
 
   def latestJarPath = new File( buildDir, 'latest-jar.txt' )
 
-  latestJarPath.write( "http://${publishBucket}/load/2.1/${jar.archivePath.name}" )
+  latestJarPath.write( "http://${publishBucket}/load/${releaseMajor}/${jar.archivePath.name}" )
 
-  def remoteToJarFile = "${publishDownloadPath}/load/2.1/latest-jar.txt"
+  def remoteToJarFile = "${publishDownloadPath}/load/${releaseMajor}/latest-jar.txt"
 
   ant.scp( file: latestJarPath, remoteToFile: remoteToJarFile,
           keyfile: publishKeyFile, passphrase: '', port: publishPort, trust: 'true' )
