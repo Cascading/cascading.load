@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Concurrent, Inc.
+# Copyright (c) 2011-2013 Concurrent, Inc.
 
 module_depends core/log core/route
 
@@ -16,7 +16,7 @@ Flags:
   -v|--version - specify the version of Cascading.Load to fetch
 USAGE
 
-cl_update_base_url="http://files.cascading.org/load/2.0"
+cl_update_base_url="http://files.cascading.org/load/2.1"
 
 cl_update_create_temp ()
 {

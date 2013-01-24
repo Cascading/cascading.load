@@ -1,4 +1,4 @@
-# Copyright (c) 2011 Concurrent, Inc.
+# Copyright (c) 2011-2013 Concurrent, Inc.
 
 module_depends core/log core/route
 
@@ -34,7 +34,7 @@ ct_help_module_list ()
   for module in $MODULES; do
     module=`basename $module`
     local length=`expr $module : '.*'`
-    
+
     if [ $length -gt $longest ]; then
       longest=$length
     fi
