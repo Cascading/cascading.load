@@ -1,7 +1,7 @@
-# Copyright (c) 2011 Concurrent, Inc.
+# Copyright (c) 2011-2013 Concurrent, Inc.
 
 if [ -z "$MODULES_ROOT" ]
-then  
+then
   MODULES_ROOT=`dirname $0`
   MODULES_ROOT=`cd $MODULES_ROOT && cd .. && pwd`
 fi
