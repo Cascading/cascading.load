@@ -21,8 +21,11 @@
 import java.text.SimpleDateFormat
 
 apply plugin: 'java'
+apply plugin: 'maven'
 apply plugin: 'idea'
 apply plugin: 'eclipse'
+
+apply from: 'etc/providedCompile.gradle'
 
 project.archivesBaseName = 'load'
 
@@ -43,13 +46,8 @@ if( System.properties[ 'aws.properties' ] )
 ext.timestamp = new SimpleDateFormat( "yyyyMMdd" ).format( new Date() )
 
 configurations {
-  providedCompile
   sshAntTask
   s3AntTask
-}
-
-sourceSets {
-  main.compileClasspath += configurations.providedCompile
 }
 
 dependencies {
