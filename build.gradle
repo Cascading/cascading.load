@@ -86,7 +86,7 @@ dependencies {
   testCompile( 'org.apache.hadoop:hadoop-test:1.0.+' ) {
     exclude group: 'oro'
   }
-  testCompile( 'junit:junit:4.8.+' )
+  testCompile( 'junit:junit:4.11' )
 }
 
 sourceSets {
