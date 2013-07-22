@@ -22,5 +22,10 @@ it_has_usage () {
 }
 
 it_sets_the_install_destination () {
-  test "$cl_install_destination" = "$HOME/.load"
+  if [ "$UID" = "0" ]
+  then
+    test "$cl_install_destination" = "/usr/local/lib/load"
+  else
+    test "$cl_install_destination" = "$HOME/.load"
+  fi
 }

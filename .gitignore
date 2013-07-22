@@ -10,3 +10,4 @@ javadoc
 *.iml
 *.iws
 *.ipr
+.idea/*
