@@ -142,7 +142,9 @@ task distCopy( type: Copy, dependsOn: jar ) {
       into 'bin' 
       filter( ReplaceTokens, tokens: [
           'location': System.properties['publish.bucket'].toString(), 
-          'majorVersion': releaseMajor.toString()])
+          'majorVersion': releaseMajor.toString(),
+          'currentVersion': timestamp.toString()
+          ])
   }
   from "$buildDir/libs"
 }
