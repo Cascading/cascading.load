@@ -19,6 +19,7 @@
  */
 
 import java.text.SimpleDateFormat
+import org.apache.tools.ant.filters.ReplaceTokens
 
 apply plugin: 'java'
 apply plugin: 'maven'
@@ -42,6 +43,7 @@ if( System.properties[ 'aws.properties' ] )
     System.properties.putAll( awsProperties )
   }
 }
+
 
 ext.timestamp = new SimpleDateFormat( "yyyyMMdd" ).format( new Date() )
 
@@ -136,8 +138,12 @@ task distCopy( type: Copy, dependsOn: jar ) {
   from 'README.md'
   from 'COMMANDS.md'
   from 'apl.txt'
-  from( 'bin' ) { into 'bin' }
-
+  from( 'bin' ) { 
+      into 'bin' 
+      filter( ReplaceTokens, tokens: [
+          'location': System.properties['publish.bucket'].toString(), 
+          'majorVersion': releaseMajor.toString()])
+  }
   from "$buildDir/libs"
 }
 

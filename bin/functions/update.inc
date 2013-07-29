@@ -16,7 +16,7 @@ Flags:
   -v|--version - specify the version of Cascading.Load to fetch
 USAGE
 
-cl_update_base_url="http://files.cascading.org/load/2.2"
+cl_update_base_url="http://@location@/load/@majorVersion@"
 
 cl_update_create_temp ()
 {
