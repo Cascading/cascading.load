@@ -190,36 +190,3 @@ s3Upload << {
   latestJarPath.delete()
   latestPath.delete()
 }
-
-task sitePublish( dependsOn: s3Upload ) << {
-
-  def publishBucket = System.properties[ 'publish.bucket' ]
-  def publishDownloadPath = System.properties[ 'publish.download.path' ]
-  def publishPort = !System.properties[ 'publish.port' ] ? '22' : System.properties[ 'publish.port' ]
-  def publishKeyFile = System.properties[ 'publish.keyfile' ]
-
-  ant.taskdef( name: 'scp', classname: 'org.apache.tools.ant.taskdefs.optional.ssh.Scp',
-          classpath: configurations.sshAntTask.asPath )
-
-  def latestPath = new File( buildDir, 'latest.txt' )
-
-  latestPath.write( "http://${publishBucket}/load/${releaseMajor}/${dist.archivePath.name}" )
-
-  def remoteToFile = "${publishDownloadPath}/load/${releaseMajor}/latest.txt"
-
-  ant.scp( file: latestPath, remoteToFile: remoteToFile,
-          keyfile: publishKeyFile, passphrase: '', port: publishPort, trust: 'true' )
-
-  latestPath.delete()
-
-  def latestJarPath = new File( buildDir, 'latest-jar.txt' )
-
-  latestJarPath.write( "http://${publishBucket}/load/${releaseMajor}/${jar.archivePath.name}" )
-
-  def remoteToJarFile = "${publishDownloadPath}/load/${releaseMajor}/latest-jar.txt"
-
-  ant.scp( file: latestJarPath, remoteToFile: remoteToJarFile,
-          keyfile: publishKeyFile, passphrase: '', port: publishPort, trust: 'true' )
-
-  latestJarPath.delete()
-}
