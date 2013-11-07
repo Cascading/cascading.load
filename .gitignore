@@ -11,3 +11,4 @@ javadoc
 *.iws
 *.ipr
 .idea/*
+aws.properties

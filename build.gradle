@@ -29,7 +29,7 @@ apply from: 'etc/providedCompile.gradle'
 
 project.archivesBaseName = 'load'
 
-ext.releaseMajor = '2.2'
+ext.releaseMajor = '2.5'
 
 if( project.properties[ 'teamcity' ] ) // make them system properties
   System.properties.putAll( project.properties[ 'teamcity' ] )
@@ -62,7 +62,7 @@ repositories {
   mavenRepo name: 'apache', url: 'https://repository.apache.org/content/repositories/releases/'
 }
 
-ext.cascadingVersion = '2.2.+'
+ext.cascadingVersion = '2.5.+'
 ext.cascadingChanging = cascadingVersion.endsWith( ' -dev' );
 
 dependencies {
@@ -83,7 +83,7 @@ dependencies {
   testCompile( group: 'cascading', name: 'cascading-core', version: cascadingVersion, changing: cascadingChanging, classifier: 'tests' )
   testCompile( group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, changing: cascadingChanging, classifier: 'tests' )
   testCompile( group: 'cascading', name: 'cascading-platform', version: cascadingVersion, changing: cascadingChanging, classifier: 'tests' )
-  testCompile( 'org.apache.hadoop:hadoop-test:1.0.+' ) {
+  testCompile( 'org.apache.hadoop:hadoop-test:1.2.+' ) {
     exclude group: 'oro'
   }
   testCompile( 'junit:junit:4.11' )
