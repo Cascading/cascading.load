@@ -62,7 +62,7 @@ repositories {
   mavenRepo name: 'apache', url: 'https://repository.apache.org/content/repositories/releases/'
 }
 
-ext.cascadingVersion = '2.5.+'
+ext.cascadingVersion = '2.5.1'
 ext.cascadingChanging = cascadingVersion.endsWith( ' -dev' );
 
 dependencies {
