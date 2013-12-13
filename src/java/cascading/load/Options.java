@@ -234,6 +234,8 @@ public class Options
   boolean leftJoin;
   boolean rightJoin;
 
+  boolean pathologicalInnerJoin;
+
   boolean pipeline;
   boolean chainedAggregate;
   boolean chainedFunction;
@@ -294,6 +296,7 @@ public class Options
     glyph = new OptionGlyph( asList( "-fg", "--full-group" ), "setFullTupleGroup", null, false, false, "run full tuple grouping load" );
     glyph = new OptionGlyph( asList( "-m", "--multi-join" ), "setMultiJoin", null, false, false, "run multi join load" );
     glyph = new OptionGlyph( asList( "-ij", "--inner-join" ), "setInnerJoin", null, false, false, "run inner join load" );
+    glyph = new OptionGlyph( asList( "-pij", "--pathological-inner-join" ), "setPathologicalInnerJoin", null, false, false, "run pathological inner join load" );
     glyph = new OptionGlyph( asList( "-oj", "--outer-join" ), "setOuterJoin", null, false, false, "run outer join load" );
     glyph = new OptionGlyph( asList( "-lj", "--left-join" ), "setLeftJoin", null, false, false, "run left join load" );
     glyph = new OptionGlyph( asList( "-rj", "--right-join" ), "setRightJoin", null, false, false, "run right join load" );
@@ -959,6 +962,10 @@ public class Options
     {
     this.rightJoin = rightJoin;
     }
+
+  public void setPathologicalInnerJoin( boolean pathologicalInnerJoin ) { this.pathologicalInnerJoin = pathologicalInnerJoin; }
+
+  public boolean isPathologicalInnerJoin() { return pathologicalInnerJoin; }
 
   ////////////////////////////////////////
 
