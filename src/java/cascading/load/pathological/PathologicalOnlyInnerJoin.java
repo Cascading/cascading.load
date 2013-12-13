@@ -57,7 +57,7 @@ public class PathologicalOnlyInnerJoin extends Load
     Pipe[] heads = Pipe.pipes( words, fielded );
     Map<String, Tap> sources = Cascades.tapsMap( heads, Tap.taps( source, source ) );
 
-    return platform.newFlowConnector( properties ).connect( "inner-join", sources, innerSink, inner );
+    return platform.newFlowConnector( properties ).connect( PathologicalOnlyInnerJoin.class.getSimpleName(), sources, innerSink, inner );
     }
 
   @Override
