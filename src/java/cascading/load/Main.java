@@ -217,6 +217,14 @@ public class Main
     {
     Properties properties = new Properties();
 
+    if( options.getAppName() != null )
+      AppProps.setApplicationName( properties, options.getAppName() );
+
+    if( options.getTags() != null )
+      AppProps.addApplicationTag( properties, options.getTags() );
+
+    AppProps.addApplicationFramework( properties, "Load" );
+
     if( options.isDebugLogging() )
       {
       Logger.getLogger( "cascading" ).setLevel( Level.DEBUG );

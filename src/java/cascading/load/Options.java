@@ -182,6 +182,8 @@ public class Options
   //////////////////////////////////////////////////////////////////////
   // option variables
 
+  String appName = null;
+  String tags = null;
   boolean singlelineStats = false;
   boolean debugLogging = false;
   int blockSizeMB = 64;
@@ -302,6 +304,8 @@ public class Options
     glyph = new OptionGlyph( asList( "-ca", "--chained-aggregate" ), "setChainedAggregate", null, false, false, "run chained aggregate load" );
     glyph = new OptionGlyph( asList( "-cf", "--chained-function" ), "setChainedFunction", null, false, false, "run chained function load" );
     glyph = new OptionGlyph( asList( "-wd", "--write-dot" ), "setWriteDotFile", null, false, false, "write DOT file" );
+    glyph = new OptionGlyph( asList( "-an", "--app-name" ), "setAppName", null, false, false, "set the application name" );
+    glyph = new OptionGlyph( asList( "-tn", "--tags" ), "setTags", null, false, false, "set the application tags, comma separated" );
     }
 
   public void parseArgs( String[] args ) throws Exception
@@ -475,6 +479,26 @@ public class Options
 
   //////////////////////////////////////////////////////////////////////
   // option handlers
+
+  public String getAppName()
+    {
+    return appName;
+    }
+
+  public void setAppName( String appName )
+    {
+    this.appName = appName;
+    }
+
+  public String getTags()
+    {
+    return tags;
+    }
+
+  public void setTags( String tags )
+    {
+    this.tags = tags;
+    }
 
   public boolean isSinglelineStats()
     {
@@ -1070,6 +1094,8 @@ public class Options
     sb.append( "Options" );
     sb.append( "{parser=" ).append( parser );
     sb.append( ", option_list=" ).append( optionList );
+    sb.append( ", appName=" ).append( Util.emptyIfNull( appName ) );
+    sb.append( ", tags=" ).append( Util.emptyIfNull( tags ) );
     sb.append( ", singlelineStats=" ).append( singlelineStats );
     sb.append( ", debugLogging=" ).append( debugLogging );
     sb.append( ", blockSizeMB=" ).append( blockSizeMB );
