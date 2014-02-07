@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -138,10 +138,10 @@ task distCopy( type: Copy, dependsOn: jar ) {
   from 'README.md'
   from 'COMMANDS.md'
   from 'apl.txt'
-  from( 'bin' ) { 
-      into 'bin' 
+  from( 'bin' ) {
+      into 'bin'
       filter( ReplaceTokens, tokens: [
-          'location': System.properties['publish.bucket'].toString(), 
+          'location': System.properties['publish.bucket'].toString(),
           'majorVersion': releaseMajor.toString(),
           'currentVersion': timestamp.toString()
           ])
