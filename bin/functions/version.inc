@@ -16,7 +16,7 @@ USAGE
 cl_version ()
 {
   cat <<VERSION
-Cascading.Load: $cl_jar_path
+load: $cl_jar_path
 `cl_jar_usage | head -n2`
 VERSION
 }

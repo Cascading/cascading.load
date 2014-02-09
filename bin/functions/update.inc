@@ -16,7 +16,7 @@ Flags:
   -v|--version - specify the version of Cascading.Load to fetch
 USAGE
 
-cl_update_base_url="http://files.cascading.org/load/2.2"
+cl_update_base_url="http://@location@/load/@majorVersion@"
 
 cl_update_create_temp ()
 {
@@ -82,7 +82,7 @@ cl_update_parse_latest ()
   if [ -z "$cl_update_latest" ]
   then
     info "INFO Parsing latest release location from $cl_update_base_url/latest.txt"
-    cl_update_latest=`cl_update_curl $cl_update_base_url/latest.txt | grep "$cl_update_base_url.*\.tgz" | sed 's|^\([^ ]*://[^ ]*\).*|\1|g' | head -n1`
+    cl_update_latest=`cl_update_curl $cl_update_base_url/latest.txt?selfupdateFrom=@currentVersion@ | grep "$cl_update_base_url.*\.tgz" | sed 's|^\([^ ]*://[^ ]*\).*|\1|g' | head -n1`
   fi
 
   if [ -z "$cl_update_latest" ]

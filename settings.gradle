@@ -18,28 +18,4 @@
  * limitations under the License.
  */
 
-package cascading.load;
-
-import java.util.Properties;
-
-import cascading.PlatformTestCase;
-
-/**
- *
- */
-public class LoadTestCase extends PlatformTestCase
-  {
-  public LoadTestCase()
-    {
-    super( false );
-    }
-
-  public Properties getProperties()
-    {
-    Properties properties = new Properties();
-
-    properties.putAll( super.getProperties() );
-
-    return properties;
-    }
-  }
+rootProject.name = 'load'

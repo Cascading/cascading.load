@@ -1,7 +1,21 @@
 /*
- * Copyright (c) 2007-2012 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
  *
- * Project and contact information: http://www.concurrentinc.com/
+ * Project and contact information: http://www.cascading.org/
+ *
+ * This file is part of the Cascading project.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package cascading.load;
@@ -182,6 +196,8 @@ public class Options
   //////////////////////////////////////////////////////////////////////
   // option variables
 
+  String appName = null;
+  String tags = null;
   boolean singlelineStats = false;
   boolean debugLogging = false;
   int blockSizeMB = 64;
@@ -280,6 +296,8 @@ public class Options
     glyph = new OptionGlyph( asList( "-MXCS" ), "setMaxConcurrentSteps", int.class, false, false, "maximum concurrent steps" );
     glyph = new OptionGlyph( asList( "-ALL" ), "setRunAllLoads", null, false, false, "run all available (non-discrete) loads" );
     glyph = new OptionGlyph( asList( "-LM" ), "setLocalMode", null, false, false, "use the local platform" );
+
+    // workloads
     glyph = new OptionGlyph( asList( "-g", "--generate" ), "setDataGenerate", null, false, false, "generate test data" );
     glyph = new OptionGlyph( asList( "-gf", "--generate-num-files" ), "setDataNumFiles", int.class, false, false, "num files to create" );
     glyph = new OptionGlyph( asList( "-gs", "--generate-file-size" ), "setDataFileSizeMB", float.class, false, false, "size in MB of each file" );
@@ -307,6 +325,8 @@ public class Options
     glyph = new OptionGlyph( asList( "-ca", "--chained-aggregate" ), "setChainedAggregate", null, false, false, "run chained aggregate load" );
     glyph = new OptionGlyph( asList( "-cf", "--chained-function" ), "setChainedFunction", null, false, false, "run chained function load" );
     glyph = new OptionGlyph( asList( "-wd", "--write-dot" ), "setWriteDotFile", null, false, false, "write DOT file" );
+    glyph = new OptionGlyph( asList( "-an", "--app-name" ), "setAppName", String.class, false, false, "set the application name" );
+    glyph = new OptionGlyph( asList( "-tn", "--tags" ), "setTags", String.class, false, false, "set the application tags, comma separated" );
     }
 
   public void parseArgs( String[] args ) throws Exception
@@ -481,6 +501,26 @@ public class Options
 
   //////////////////////////////////////////////////////////////////////
   // option handlers
+
+  public String getAppName()
+    {
+    return appName;
+    }
+
+  public void setAppName( String appName )
+    {
+    this.appName = appName;
+    }
+
+  public String getTags()
+    {
+    return tags;
+    }
+
+  public void setTags( String tags )
+    {
+    this.tags = tags;
+    }
 
   public boolean isSinglelineStats()
     {
@@ -1084,6 +1124,8 @@ public class Options
     sb.append( "Options" );
     sb.append( "{parser=" ).append( parser );
     sb.append( ", option_list=" ).append( optionList );
+    sb.append( ", appName=" ).append( Util.emptyIfNull( appName ) );
+    sb.append( ", tags=" ).append( Util.emptyIfNull( tags ) );
     sb.append( ", singlelineStats=" ).append( singlelineStats );
     sb.append( ", debugLogging=" ).append( debugLogging );
     sb.append( ", blockSizeMB=" ).append( blockSizeMB );

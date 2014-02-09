@@ -52,7 +52,7 @@ it_exits_if_a_git_repo_is_detected () {
 }
 
 it_parses_the_latest_load_location () {
-  testing_url="http://files.cascading.org/load/2.2/load-latest.tgz"
+  testing_url="http://@location@/load/@majorVersion@/load-latest.tgz"
   CURL_BIN="echo $testing_url"
   cl_update_reject_git () {
     CT_PATH=/does/not/exist
@@ -74,7 +74,7 @@ it_complains_if_curl_fails_to_fetch_latest () {
     CT_PATH=/does/not/exist
   }
   module_exit () {
-    [ "$*" = "Cannot get latest Load from http://files.cascading.org/load/2.2/latest.txt" ] && tested=1
+    [ "$*" = "Cannot get latest Load from http://@location@/load/@majorVersion@/latest.txt" ] && tested=1
   }
   cl_update_create_temp () {
     [ "$tested" = "1" ] && tested=2
@@ -99,13 +99,13 @@ it_allows_a_version_specifier () {
   }
 
   route_perform update -v latest
-  test "$cl_update_latest" = "http://files.cascading.org/load/2.2/load-latest.tgz"
+  test "$cl_update_latest" = "http://@location@/load/@majorVersion@/load-latest.tgz"
 
   route_perform update --version more_latest
-  test "$cl_update_latest" = "http://files.cascading.org/load/2.2/load-more_latest.tgz"
+  test "$cl_update_latest" = "http://@location@/load/@majorVersion@/load-more_latest.tgz"
 
   route_perform update --version=super_latest
-  test "$cl_update_latest" = "http://files.cascading.org/load/2.2/load-super_latest.tgz"
+  test "$cl_update_latest" = "http://@location@/load/@majorVersion@/load-super_latest.tgz"
 }
 
 it_updates_an_existing_installation () {

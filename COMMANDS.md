@@ -1,6 +1,6 @@
 Load - Command Line Reference
 =============================
-    cascading.load [param] [param] ...
+    load [param] [param] ...
 
 At least one flow must be selected, to run Load
 
