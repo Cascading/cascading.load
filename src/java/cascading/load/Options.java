@@ -293,6 +293,8 @@ public class Options
     glyph = new OptionGlyph( asList( "-MXCS" ), "setMaxConcurrentSteps", int.class, false, false, "maximum concurrent steps" );
     glyph = new OptionGlyph( asList( "-ALL" ), "setRunAllLoads", null, false, false, "run all available (non-discrete) loads" );
     glyph = new OptionGlyph( asList( "-LM" ), "setLocalMode", null, false, false, "use the local platform" );
+
+    // workloads
     glyph = new OptionGlyph( asList( "-g", "--generate" ), "setDataGenerate", null, false, false, "generate test data" );
     glyph = new OptionGlyph( asList( "-gf", "--generate-num-files" ), "setDataNumFiles", int.class, false, false, "num files to create" );
     glyph = new OptionGlyph( asList( "-gs", "--generate-file-size" ), "setDataFileSizeMB", float.class, false, false, "size in MB of each file" );
@@ -318,8 +320,8 @@ public class Options
     glyph = new OptionGlyph( asList( "-ca", "--chained-aggregate" ), "setChainedAggregate", null, false, false, "run chained aggregate load" );
     glyph = new OptionGlyph( asList( "-cf", "--chained-function" ), "setChainedFunction", null, false, false, "run chained function load" );
     glyph = new OptionGlyph( asList( "-wd", "--write-dot" ), "setWriteDotFile", null, false, false, "write DOT file" );
-    glyph = new OptionGlyph( asList( "-an", "--app-name" ), "setAppName", null, false, false, "set the application name" );
-    glyph = new OptionGlyph( asList( "-tn", "--tags" ), "setTags", null, false, false, "set the application tags, comma separated" );
+    glyph = new OptionGlyph( asList( "-an", "--app-name" ), "setAppName", String.class, false, false, "set the application name" );
+    glyph = new OptionGlyph( asList( "-tn", "--tags" ), "setTags", String.class, false, false, "set the application tags, comma separated" );
     }
 
   public void parseArgs( String[] args ) throws Exception
