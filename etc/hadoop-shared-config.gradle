@@ -1,9 +1,5 @@
 /*
-<<<<<<< HEAD
  * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
-=======
- * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
->>>>>>> more standard compliant layout
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -22,8 +18,16 @@
  * limitations under the License.
  */
 
-rootProject.name = 'load'
+sourceSets {
+  main {
+    java {
+      srcDirs += 'src/main/shared'
+    }
+  }
 
-include 'load-docs'
-include 'load-hadoop'
-include 'load-hadoop2-mr1'
+  test {
+    java {
+      srcDirs += 'src/test/shared'
+    }
+  }
+}

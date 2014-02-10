@@ -21,163 +21,117 @@
 import java.text.SimpleDateFormat
 import org.apache.tools.ant.filters.ReplaceTokens
 
-apply plugin: 'java'
-apply plugin: 'maven'
-apply plugin: 'idea'
-apply plugin: 'eclipse'
+apply from: 'etc/version.gradle'
+apply from: 'etc/properties.gradle'
+apply from: 'etc/s3Upload.gradle'
 
-apply from: 'etc/providedCompile.gradle'
-
-ext.releaseMajor = '2.5'
-
-if( project.properties[ 'teamcity' ] ) // make them system properties
-  System.properties.putAll( project.properties[ 'teamcity' ] )
-
-if( System.properties[ 'aws.properties' ] )
-{
-  file( System.properties[ 'aws.properties' ] ).withReader { reader ->
-    def awsProperties = new Properties()
-    awsProperties.load( reader )
-    System.properties.putAll( awsProperties )
+buildscript {
+  repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url 'http://repo.springsource.org/plugins-release' }
+  }
+  dependencies {
+    classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.4'
+    classpath 'eu.appsatori:gradle-fatjar-plugin:0.2-rc1'
   }
 }
 
-
-ext.timestamp = new SimpleDateFormat( "yyyyMMdd" ).format( new Date() )
-
-configurations {
-  sshAntTask
-  s3AntTask
-}
-
-dependencies {
-  sshAntTask 'org.apache.ant:ant-jsch:1.7.1', 'jsch:jsch:0.1.29'
-  s3AntTask 'thirdparty:awstasks:0.3'
+// gives 'provided' scope for hadoop
+configure( allprojects ) {
+  apply plugin: 'propdeps'
+  apply plugin: 'propdeps-maven'
+  apply plugin: 'propdeps-idea'
+  apply plugin: 'propdeps-eclipse'
 }
 
 repositories {
   mavenLocal()
   mavenCentral()
-  mavenRepo name: 'conjars', url: 'http://conjars.org/repo/'
-  mavenRepo name: 'apache', url: 'https://repository.apache.org/content/repositories/releases/'
+  maven{ url 'http://conjars.org/repo/' }
 }
 
 ext.cascadingVersion = '2.5.2'
-ext.hadoopVersion = 1.2.1
-
+ext.hadoopVersion = '1.2.1'
+ext.hadoop2Version = '2.2.0'
 ext.cascadingChanging = cascadingVersion.endsWith( ' -dev' );
+ext.buildDate = new SimpleDateFormat( "yyyyMMdd" ).format( new Date() )
+ext.buildTimestamp = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" ).format( new Date() )
 
-dependencies {
+subprojects {
+  ext.jarName = "${project.name}-${buildDate}.jar"
+  apply plugin: 'java'
+  apply plugin: 'maven'
+  apply plugin: 'idea'
+  apply plugin: 'eclipse'
 
-  compile( group: 'cascading', name: 'cascading-core', version: cascadingVersion, changing: cascadingChanging )
-
-  compile( group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, changing: cascadingChanging )
-
-  compile( group: 'cascading', name: 'cascading-local', version: cascadingVersion, changing: cascadingChanging )
-
-  providedCompile( group: 'org.apache.hadoop', name: 'hadoop-core', version: hadoopVersion ) {
-    exclude group: 'ant'
-    exclude group: 'oro'
-  }
-  compile( group: 'net.sf.jopt-simple', name: 'jopt-simple', version:'4.3' )
-  compile( group: 'log4j', name:'log4j', version:' 1.2.16' )
-
-  testCompile( group: 'cascading', name: 'cascading-core', version: cascadingVersion, changing: cascadingChanging, classifier: 'tests' )
-  testCompile( group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, changing: cascadingChanging, classifier: 'tests' )
-  testCompile( group: 'cascading', name: 'cascading-platform', version: cascadingVersion, changing: cascadingChanging, classifier: 'tests' )
-
-  testCompile( group: 'org.apache.hadoop', name: 'hadoop-test', version: hadoopVersion ) {
-    exclude group: 'oro'
-  }
-  testCompile( group: 'junit', name: 'junit', version: '4.11' )
-}
-
-
-task shellTest( type: Exec ) {
-  commandLine = ['/bin/sh', "${rootDir}/src/test/sh/helper/roundup.sh",
-          "${rootDir}/src/test/sh/core/*_test.sh",
-          "${rootDir}/src/test/sh/cascading/*_test.sh",
-          "${rootDir}/src/test/sh/*_test.sh"]
-}
-
-test {
-  dependsOn 'shellTest'
-
-  exclude '**/*TestCase*'
-}
-
-jar {
-  description = "Assembles a Hadoop ready jar file"
-  version = timestamp
-
-  doFirst {
-    into( 'lib' ) {
-      from( configurations.compile )
-    }
+  repositories{
+    mavenLocal()
+    mavenCentral()
+    mavenRepo name: 'conjars', url: 'http://conjars.org/repo/'
   }
 
-  manifest {
-    attributes( "Main-Class": "cascading/load/Main" )
-    attributes( "Build-Date": "${timestamp}" )
+  dependencies {
+    testCompile group: 'junit', name: 'junit', version: "4.11"
+  }
+  test {
+    exclude '**/*TestCase*'
   }
 }
 
 task distCopy( type: Copy, dependsOn: jar ) {
 
-  into "${buildDir}/dist/${archivesBaseName}-${timestamp}"
+  into "${buildDir}/dist/${archivesBaseName}-${buildDate}"
 
   from 'README.md'
-  from 'COMMANDS.md'
   from 'apl.txt'
-  from( 'bin' ) {
-      into 'bin'
-      filter( ReplaceTokens, tokens: [
-          'location': System.properties['publish.bucket'].toString(),
-          'majorVersion': releaseMajor.toString(),
-          'currentVersion': timestamp.toString()
-          ])
-  }
-  from "$buildDir/libs"
+  from( 'src/main/shell' ) { into 'bin' }
+
+  from( "load-hadoop/build/libs" ) { into 'platform/hadoop/' }
+  from( "load-hadoop2-mr1/build/libs" ) { into 'platform/hadoop2mr1/' }
+  from( "load-docs/build/asciidoc" ) {into 'docs'}
 }
+
+distCopy.dependsOn( [":load-docs:asciidoctor", ":load-hadoop:fatJar", ":load-hadoop2-mr1:fatJar" ] )
 
 task dist( type: Tar, dependsOn: distCopy ) {
 
   compression = "GZIP"
-  version = timestamp
+  version = buildDir
 
   from "${buildDir}/dist/"
 }
 
-task s3Upload( dependsOn: dist ) {
+/*task s3Upload( dependsOn: dist ) {*/
 
-  ext.awsAccessId = System.properties[ 'publish.aws.accessId' ]
-  ext.awsSecretKey = System.properties[ 'publish.aws.secretKey' ]
-  ext.s3Bucket = System.properties[ 'publish.bucket' ]
+  //ext.awsAccessId = System.properties[ 'publish.aws.accessId' ]
+  //ext.awsSecretKey = System.properties[ 'publish.aws.secretKey' ]
+  //ext.s3Bucket = System.properties[ 'publish.bucket' ]
 
-  ext.remotePath = "load/${releaseMajor}/"
-}
+  //ext.remotePath = "load/${releaseMajor}/"
+//}
 
-s3Upload << {
+//s3Upload << {
 
-  def latestJarPath = new File( buildDir, 'latest-jar.txt' )
+  //def latestJarPath = new File( buildDir, 'latest-jar.txt' )
 
-  latestJarPath.write( "http://${s3Bucket}/${remotePath}${jar.archivePath.name}" )
+  //latestJarPath.write( "http://${s3Bucket}/${remotePath}${jar.archivePath.name}" )
 
-  def latestPath = new File( buildDir, 'latest.txt' )
+  //def latestPath = new File( buildDir, 'latest.txt' )
 
-  latestPath.write( "http://${s3Bucket}/${remotePath}${dist.archivePath.name}" )
+  //latestPath.write( "http://${s3Bucket}/${remotePath}${dist.archivePath.name}" )
 
-  ant.taskdef( name: 's3Upload', classname: 'dak.ant.taskdefs.S3Upload',
-          classpath: configurations.s3AntTask.asPath )
+  //ant.taskdef( name: 's3Upload', classname: 'dak.ant.taskdefs.S3Upload',
+          //classpath: configurations.s3AntTask.asPath )
 
-  ant.s3Upload( verbose: 'true', accessId: awsAccessId, secretKey: awsSecretKey,
-          bucket: s3Bucket, prefix: remotePath, publicRead: 'true' ) {
-    fileset( file: dist.archivePath )
-    fileset( file: jar.archivePath )
-    fileset( file: latestJarPath )
-    fileset( file: latestPath )
-  }
+  //ant.s3Upload( verbose: 'true', accessId: awsAccessId, secretKey: awsSecretKey,
+          //bucket: s3Bucket, prefix: remotePath, publicRead: 'true' ) {
+    //fileset( file: dist.archivePath )
+    //fileset( file: jar.archivePath )
+    //fileset( file: latestJarPath )
+    //fileset( file: latestPath )
+  //}
 
-  latestJarPath.delete()
-  latestPath.delete()
-}
+  //latestJarPath.delete()
+  //latestPath.delete()
+/*}*/

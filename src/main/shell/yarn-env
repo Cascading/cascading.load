@@ -1,0 +1,24 @@
+if [ -d "${HADOOP_YARN_HOME}" ]; then
+  YARN_EXEC="$HADOOP_YARN_HOME/bin/yarn"
+  if [ -n "${YARN_EXEC}"  ]; then
+      echo "Could not find yarn executable in HADOOP_YARN_HOME"
+      exit 1
+  fi
+  return
+elif [ -d "${HADOOP_HOME}" ]; then
+  YARN_EXEC="$HADOOP_HOME/bin/yarn"
+  if [ -n "${YARN_EXEC}"  ]; then
+      echo "Could not find yarn executable in HADOOP_HOME"
+      exit 1
+  fi
+  return
+else
+  BIN_PATH=`which yarn`
+  if [ -n "${BIN_PATH}" ] ; then
+    YARN_EXEC=$BIN_PATH
+    return
+  else
+    echo "Could not find HADOOP_HOME, HADOOP_YARN_HOME nor is 'yarn' in the PATH. exiting."
+    exit 1
+  fi
+fi

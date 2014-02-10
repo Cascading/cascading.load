@@ -1,0 +1,12 @@
+if [ -z "${HADOOP_HOME}" ]; then
+  BIN_PATH=`which hadoop`
+  if [ -n "${BIN_PATH}" ] ; then
+    export HADOOP_EXEC=$BIN_PATH
+    return
+  else
+    echo "Could not find HADOOP_HOME nor is 'hadoop' in the PATH. exiting."
+    exit 1
+  fi
+else
+    export HADOOP_EXEC="$HADOOP_HOME/bin/hadoop"
+fi

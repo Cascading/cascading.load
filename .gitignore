@@ -12,3 +12,6 @@ javadoc
 *.ipr
 .idea/*
 aws.properties
+.settings
+.classpath
+.project
