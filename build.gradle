@@ -57,6 +57,8 @@ ext.hadoop2Version = '2.2.0'
 ext.cascadingChanging = cascadingVersion.endsWith( ' -dev' );
 ext.buildDate = new SimpleDateFormat( "yyyyMMdd" ).format( new Date() )
 ext.buildTimestamp = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" ).format( new Date() )
+ext.tarBaseName = "${rootProject.name}-${buildDate}"
+ext.finalTarName = "${tarBaseName}.tgz"
 
 subprojects {
   ext.jarName = "${project.name}-${buildDate}.jar"
@@ -64,6 +66,7 @@ subprojects {
   apply plugin: 'maven'
   apply plugin: 'idea'
   apply plugin: 'eclipse'
+  apply from: "${rootDir}/etc/testing.gradle"
 
   repositories{
     mavenLocal()
@@ -71,11 +74,50 @@ subprojects {
     mavenRepo name: 'conjars', url: 'http://conjars.org/repo/'
   }
 
+  configurations {
+    testArtifacts {
+      extendsFrom testRuntime
+    }   
+  }
+
   dependencies {
     testCompile group: 'junit', name: 'junit', version: "4.11"
   }
   test {
     exclude '**/*TestCase*'
+  }
+
+  task testsJar( type: Jar, dependsOn: testClasses ) {
+    from sourceSets.test.output
+    classifier = 'tests'
+  }
+
+  task testSourcesJar( type: Jar, dependsOn: classes ) {
+    from sourceSets.test.allSource
+    classifier = 'test-sources'
+  }
+
+
+  artifacts {
+    testArtifacts testsJar
+    testArtifacts testSourcesJar
+  }
+}
+
+allprojects {
+  idea {
+    module {
+      downloadJavadoc = true
+      downloadSources = true
+    }
+  }
+
+  eclipse {
+    classpath {
+      defaultOutputDir = file( 'build' )
+      downloadSources = true
+      downloadJavadoc = true
+    }
   }
 }
 
@@ -88,50 +130,42 @@ task distCopy( type: Copy, dependsOn: jar ) {
   from( 'src/main/shell' ) { into 'bin' }
 
   from( "load-hadoop/build/libs" ) { into 'platform/hadoop/' }
-  from( "load-hadoop2-mr1/build/libs" ) { into 'platform/hadoop2mr1/' }
+  from( "load-hadoop2-mr1/build/libs" ) { into 'platform/hadoop2-mr1/' }
+  from( "load-local/build/libs" ) { into 'platform/local/' }
   from( "load-docs/build/asciidoc" ) {into 'docs'}
 }
 
-distCopy.dependsOn( [":load-docs:asciidoctor", ":load-hadoop:fatJar", ":load-hadoop2-mr1:fatJar" ] )
+distCopy.dependsOn( [":load-docs:asciidoctor", ":load-hadoop:fatJar", ":load-hadoop2-mr1:fatJar", "load-local:fatJar" ] )
 
-task dist( type: Tar, dependsOn: distCopy ) {
 
-  compression = "GZIP"
-  version = buildDir
-
-  from "${buildDir}/dist/"
+task buildTarball( type: Tar, dependsOn: distCopy ) {
+  baseName = "${tarBaseName}"
+  destinationDir = new File( "${s3UploadArtifacts.source}" )
+  compression = Compression.GZIP
+  from( "build/dist" )
 }
 
-/*task s3Upload( dependsOn: dist ) {*/
-
-  //ext.awsAccessId = System.properties[ 'publish.aws.accessId' ]
-  //ext.awsSecretKey = System.properties[ 'publish.aws.secretKey' ]
-  //ext.s3Bucket = System.properties[ 'publish.bucket' ]
-
-  //ext.remotePath = "load/${releaseMajor}/"
-//}
-
-//s3Upload << {
-
-  //def latestJarPath = new File( buildDir, 'latest-jar.txt' )
-
-  //latestJarPath.write( "http://${s3Bucket}/${remotePath}${jar.archivePath.name}" )
-
-  //def latestPath = new File( buildDir, 'latest.txt' )
-
-  //latestPath.write( "http://${s3Bucket}/${remotePath}${dist.archivePath.name}" )
-
-  //ant.taskdef( name: 's3Upload', classname: 'dak.ant.taskdefs.S3Upload',
-          //classpath: configurations.s3AntTask.asPath )
-
-  //ant.s3Upload( verbose: 'true', accessId: awsAccessId, secretKey: awsSecretKey,
-          //bucket: s3Bucket, prefix: remotePath, publicRead: 'true' ) {
-    //fileset( file: dist.archivePath )
-    //fileset( file: jar.archivePath )
-    //fileset( file: latestJarPath )
-    //fileset( file: latestPath )
-  //}
-
-  //latestJarPath.delete()
-  //latestPath.delete()
-/*}*/
+task packageDist( dependsOn: buildTarball ) << {
+  file( "${s3UploadArtifacts.source}/latest.txt" ).write( "http://${s3UploadArtifacts.destination}${finalTarName}" )
+  //file( "${s3UploadArtifacts.source}/latest-sha1.txt" ).write( "http://${s3UploadArtifacts.destination}${finalTarName}.sha1" )
+  //file( "${s3UploadArtifacts.source}/latest-md5.txt" ).write( "http://${s3UploadArtifacts.destination}${finalTarName}.md5" )
+  file( "${s3UploadArtifacts.source}/latest-hadoop-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-hadoop').jarName}" )
+  file( "${s3UploadArtifacts.source}/latest-hadoop2-mr1-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-hadoop2-mr1').jarName}" )
+  copy {
+    from ( "load-hadoop/build/libs/" )
+    into( "${s3UploadArtifacts.source}" ) include( "*jar" )
+  }
+  copy {
+    from ( "load-hadoop2-mr1/build/libs/" )
+    into( "${s3UploadArtifacts.source}" )
+    include( "*jar" )
+  }
+  copy {
+    from( "src/main/shell/util/install-load.sh" )
+      filter( ReplaceTokens, tokens: [
+              'location': project.s3Bucket.toString(),
+              'majorVersion': majorVersion.toString()
+      ] ) 
+    into( "${s3UploadArtifacts.source}" )
+  }
+}

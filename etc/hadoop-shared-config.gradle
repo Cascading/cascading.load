@@ -23,6 +23,9 @@ sourceSets {
     java {
       srcDirs += 'src/main/shared'
     }
+    resources {
+      srcDirs += 'src/main/shared-resources'
+    }
   }
 
   test {

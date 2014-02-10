@@ -1,13 +1,13 @@
 if [ -d "${HADOOP_YARN_HOME}" ]; then
   YARN_EXEC="$HADOOP_YARN_HOME/bin/yarn"
-  if [ -n "${YARN_EXEC}"  ]; then
+  if [ -z "${YARN_EXEC}"  ]; then
       echo "Could not find yarn executable in HADOOP_YARN_HOME"
       exit 1
   fi
   return
 elif [ -d "${HADOOP_HOME}" ]; then
   YARN_EXEC="$HADOOP_HOME/bin/yarn"
-  if [ -n "${YARN_EXEC}"  ]; then
+  if [ -z "${YARN_EXEC}"  ]; then
       echo "Could not find yarn executable in HADOOP_HOME"
       exit 1
   fi

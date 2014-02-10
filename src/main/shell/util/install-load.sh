@@ -26,7 +26,7 @@ then
   USER_HOME=/home/hadoop
 fi
 
-# root of install, by default becomes $USER_HOME/.multitool
+# root of install, by default becomes $USER_HOME/.load
 INSTALL_PATH=$USER_HOME
 
 BASH_PROFILE=.bashrc
@@ -94,7 +94,7 @@ UNARCHIVED=$TMPDIR/unarchived/
 LATEST_LOAD=`curl --connect-timeout 10 --retry 5 ${LATEST}`
 echo ${LATEST_LOAD} > ${REDIR}
 
-[ -f ${MULTITOOL_LOAD}/latest ] && LOAD_CURRENT=`cat ${LOAD_HOME}/latest`
+[ -f ${LOAD_HOME}/latest ] && LOAD_CURRENT=`cat ${LOAD_HOME}/latest`
 # force update if on dev releases
 if [ "`cat $REDIR`" = "${LOAD_CURRENT/wip-dev/}" ]; then
   echo "no update available"
@@ -113,7 +113,7 @@ if [ -d "${LOAD_HOME}" ]; then
   mv ${LOAD_HOME} $TMPDIR/$RANDOM
 fi
 
-#if MULTITOOL_HOME does not exist, create it
+#if LOAD_HOME does not exist, create it
 if [ ! -d "${LOAD_HOME}" ]; then
     mkdir -p ${LOAD_HOME}
     chmod a+r ${LOAD_HOME}
@@ -143,5 +143,20 @@ EOF
   echo "Successfully updated ${USER_HOME}/${BASH_PROFILE} with new PATH information."
 elif [ -z "`which multitool`" ]; then
 
-  echo "To complete installation, add \"${MULTITOOL_HOME}/bin\" to the PATH."
+  echo "To complete installation, add \"${LOAD_HOME}/bin\" to the PATH."
+fi
+
+CASCADING_CONFIG_DIR=$HOME/.cascading
+
+if [[ ! -e  ${CASCADING_CONFIG_DIR} ]]; then
+  mkdir ${CASCADING_CONFIG_DIR}
+fi
+
+CASCADING_CONFIG_FILE=${CASCADING_CONFIG_DIR}/default.properties
+
+HADOOP_MAJOR_VERSION=`hadoop version | grep "Hadoop" | awk '{print $2 }' | awk -F\. '{print $1}'`
+if [[ "2" == $HADOOP_MAJOR_VERSION ]]; then
+  echo 'load.platform.name=hadoop2-mr1' >> $CASCADING_CONFIG_FILE
+else
+  echo 'load.platform.name=hadoop' >> $CASCADING_CONFIG_FILE
 fi

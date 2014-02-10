@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
+ * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -31,18 +31,19 @@ buildscript {
 }
 
 apply plugin: 'fatjar'
+apply from: "${rootDir}/etc/hadoop-shared-config.gradle"
 
 dependencies {
+  
+  compile project( ':load-common' )
 
   compile group: 'cascading', name: 'cascading-hadoop2-mr1', version: cascadingVersion
-  compile group: 'cascading', name: 'cascading-local', version: cascadingVersion
-  compile( group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.3' )
-  compile( group: 'log4j', name: 'log4j', version: '1.2.16' )
 
   provided( group: 'org.apache.hadoop', name: 'hadoop-common', version: hadoop2Version )
   provided( group: 'org.apache.hadoop', name: 'hadoop-client', version: hadoop2Version )
   provided group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
-
+  
+  testCompile project( path: ':load-platform', configuration: 'testArtifacts' )
   testCompile group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: hadoop2Version 
   testCompile group: 'org.apache.hadoop', name: 'hadoop-minicluster', version: hadoop2Version 
   testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true
@@ -50,22 +51,6 @@ dependencies {
   testCompile group: 'cascading', name: 'cascading-platform', version: cascadingVersion, classifier: 'tests', changing: true
 
 }
-
-/*sourceSets {
-  main {
-    java {
-      srcDirs += project(":load-hadoop").sourceSets.main.java
-    }
-    resources {
-      srcDirs += project(":load-hadoop").sourceSets.main.resources
-    }
-  }
-  test{
-    java{
-      srcDirs += project(":load-hadoop").sourceSets.test.java
-    }
-  }
-}*/
 
 fatJar {
   archiveName  = jarName
@@ -79,4 +64,9 @@ fatJar {
 
 artifacts {
   archives fatJar
+}
+
+test {
+  setTestClassesDir( file( "${projectDir}/../load-platform/src/test/java/" ) )
+  sourceSets.test.output.classesDir = file( "${projectDir}/../load-platform/build/classes/test" )
 }

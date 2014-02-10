@@ -1,9 +1,5 @@
 /*
-<<<<<<< HEAD
  * Copyright (c) 2007-2014 Concurrent, Inc. All Rights Reserved.
-=======
- * Copyright (c) 2007-2013 Concurrent, Inc. All Rights Reserved.
->>>>>>> more standard compliant layout
  *
  * Project and contact information: http://www.cascading.org/
  *
@@ -25,5 +21,8 @@
 rootProject.name = 'load'
 
 include 'load-docs'
+include 'load-common'
+include 'load-platform'
 include 'load-hadoop'
 include 'load-hadoop2-mr1'
+include 'load-local'
