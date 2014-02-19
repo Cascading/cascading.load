@@ -29,6 +29,8 @@ import cascading.load.join.OnlyInnerJoin;
 import cascading.load.join.OnlyLeftJoin;
 import cascading.load.join.OnlyOuterJoin;
 import cascading.load.join.OnlyRightJoin;
+import cascading.load.pathological.BreakingLoad;
+import cascading.load.pathological.PathologicalOnlyInnerJoin;
 import cascading.load.pipeline.ChainedAggregate;
 import cascading.load.pipeline.ChainedFunction;
 import cascading.load.pipeline.Pipeline;
@@ -114,6 +116,13 @@ public class Main
 
     if( options.isOuterJoin() )
       flows.add( new OnlyOuterJoin( options, getDefaultProperties() ).createFlow() );
+
+    if( options.isPathologicalInnerJoin() )
+      flows.add( new PathologicalOnlyInnerJoin( options, getDefaultProperties() ).createFlow() );
+
+    if( options.isBreakingLoads() )
+      for (BreakingLoad breakingLoad : BreakingLoad.breakingLoads(options, getDefaultProperties() ))
+        flows.add( breakingLoad.createFlow()) ;
 
     if( options.isWriteDotFile() )
       for( Flow flow : flows )

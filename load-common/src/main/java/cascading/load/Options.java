@@ -231,6 +231,9 @@ public class Options
   boolean leftJoin;
   boolean rightJoin;
 
+  boolean pathologicalInnerJoin;
+  boolean breakingLoads;
+
   boolean pipeline;
   boolean chainedAggregate;
   boolean chainedFunction;
@@ -294,6 +297,8 @@ public class Options
     glyph = new OptionGlyph( asList( "-fg", "--full-group" ), "setFullTupleGroup", null, false, false, "run full tuple grouping load" );
     glyph = new OptionGlyph( asList( "-m", "--multi-join" ), "setMultiJoin", null, false, false, "run multi join load" );
     glyph = new OptionGlyph( asList( "-ij", "--inner-join" ), "setInnerJoin", null, false, false, "run inner join load" );
+    glyph = new OptionGlyph( asList( "-pij", "--pathological-inner-join" ), "setPathologicalInnerJoin", null, false, false, "run pathological inner join load" );
+    glyph = new OptionGlyph( asList( "-dt", "--destructive-testing" ), "setBreakingLoads", null, false, false, "run loads that are intended to produce errors" );
     glyph = new OptionGlyph( asList( "-oj", "--outer-join" ), "setOuterJoin", null, false, false, "run outer join load" );
     glyph = new OptionGlyph( asList( "-lj", "--left-join" ), "setLeftJoin", null, false, false, "run left join load" );
     glyph = new OptionGlyph( asList( "-rj", "--right-join" ), "setRightJoin", null, false, false, "run right join load" );
@@ -333,7 +338,8 @@ public class Options
 
       if( !( this.runAllLoads || this.dataGenerate || this.dataConsume || this.countSort || this.certifyTests ||
         this.staggeredSort || this.fullTupleGroup || this.multiJoin || this.innerJoin || this.outerJoin ||
-        this.leftJoin || this.rightJoin || this.pipeline || this.chainedAggregate || this.chainedFunction ) )
+        this.leftJoin || this.rightJoin || this.pipeline || this.chainedAggregate || this.chainedFunction ||
+        this.pathologicalInnerJoin || this.breakingLoads) )
         {
         throw new Exception( "At least one flow must be selected, to run Load" );
         }
@@ -893,6 +899,14 @@ public class Options
     {
     this.rightJoin = rightJoin;
     }
+
+  public void setPathologicalInnerJoin( boolean pathologicalInnerJoin ) { this.pathologicalInnerJoin = pathologicalInnerJoin; }
+
+  public boolean isPathologicalInnerJoin() { return pathologicalInnerJoin; }
+
+  public void setBreakingLoads( boolean breakingLoads ) { this.breakingLoads = breakingLoads; }
+
+  public boolean isBreakingLoads() { return breakingLoads; }
 
   ////////////////////////////////////////
 
