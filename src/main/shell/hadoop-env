@@ -1,12 +1,14 @@
-if [ -z "${HADOOP_HOME}" ]; then
-  BIN_PATH=`which hadoop`
-  if [ -n "${BIN_PATH}" ] ; then
-    export HADOOP_EXEC=$BIN_PATH
-    return
-  else
-    echo "Could not find HADOOP_HOME nor is 'hadoop' in the PATH. exiting."
-    exit 1
+HADOOP_EXEC=`which hadoop`
+
+if [ -z ${HADOOP_EXEC} ]; then
+  if [ ! -z "$HADOOP_CONF_DIR" -a -f $HADOOP_CONF_DIR/../bin/hadoop ]; then
+    HADOOP_EXEC=$HADOOP_CONF_DIR/../bin/hadoop
+  elif [ ! -z "$HADOOP_HOME" -a -f $HADOOP_HOME/bin/hadoop ] ; then
+    HADOOP_EXEC=$HADOOP_HOME/bin/hadoop
   fi
-else
-    export HADOOP_EXEC="$HADOOP_HOME/bin/hadoop"
+fi
+
+if [ -z ${HADOOP_EXEC} ]; then
+    echo "Could not find HADOOP_HOME, HADOOP_CONF_DIR, nor is 'hadoop' in the PATH. exiting."
+    exit 1
 fi

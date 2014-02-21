@@ -4,7 +4,7 @@
 function show_usage {
   echo "Type load -h for the full help or load --selfupdate if you want to install the latest version."
   echo ""
-  echo "To set a default platform, set the LOCAL_PLATFORM env variable."
+  echo "To set a default platform, set the LOAD_PLATFORM env variable."
 }
 
 if [ $# = 0 ]; then
