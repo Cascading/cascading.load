@@ -36,6 +36,14 @@ public class Util
     return list.toArray( new String[ list.size() ] );
     }
 
+  public static String emptyIfNull( String string )
+    {
+    if( string == null )
+      return "";
+
+    return string;
+    }
+
   public static String extractOrNull( Pattern pattern, String value )
     {
     Matcher matcher = pattern.matcher( value );
