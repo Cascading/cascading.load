@@ -77,7 +77,7 @@ subprojects {
   configurations {
     testArtifacts {
       extendsFrom testRuntime
-    }   
+    }
   }
 
   dependencies {
@@ -129,9 +129,9 @@ task distCopy( type: Copy, dependsOn: jar ) {
   from 'apl.txt'
   from( 'src/main/shell' ) { into 'bin' }
 
-  from( "load-hadoop/build/libs" ) { into 'platform/hadoop/' }
-  from( "load-hadoop2-mr1/build/libs" ) { into 'platform/hadoop2-mr1/' }
-  from( "load-local/build/libs" ) { into 'platform/local/' }
+  from( project ( ":load-hadoop" ).fatJar ) { into 'platform/hadoop/' }
+  from( project ( ":load-hadoop2-mr1" ).fatJar ) { into 'platform/hadoop2-mr1/' }
+  from( project ( ":load-local" ).fatJar ) { into 'platform/local/' }
   from( "load-docs/build/asciidoc" ) {into 'docs'}
 }
 
@@ -152,20 +152,19 @@ task packageDist( dependsOn: buildTarball ) << {
   file( "${s3UploadArtifacts.source}/latest-hadoop-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-hadoop').jarName}" )
   file( "${s3UploadArtifacts.source}/latest-hadoop2-mr1-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-hadoop2-mr1').jarName}" )
   copy {
-    from ( "load-hadoop/build/libs/" )
-    into( "${s3UploadArtifacts.source}" ) include( "*jar" )
+    from ( project( ":load-hadoop" ).fatJar )
+    into( "${s3UploadArtifacts.source}" )
   }
   copy {
-    from ( "load-hadoop2-mr1/build/libs/" )
+    from ( project( ":load-hadoop2-mr1" ).fatJar )
     into( "${s3UploadArtifacts.source}" )
-    include( "*jar" )
   }
   copy {
     from( "src/main/shell/util/install-load.sh" )
       filter( ReplaceTokens, tokens: [
               'location': project.s3Bucket.toString(),
               'majorVersion': majorVersion.toString()
-      ] ) 
+      ] )
     into( "${s3UploadArtifacts.source}" )
   }
 }
