@@ -90,7 +90,7 @@ UNARCHIVED=$TMPDIR/unarchived/
 
 [ -d "${UNARCHIVED}" ] && rm -rf ${UNARCHIVED}
 
-# find latest multitool
+# find latest load
 LATEST_LOAD=`curl --connect-timeout 10 --retry 5 ${LATEST}`
 echo ${LATEST_LOAD} > ${REDIR}
 
@@ -104,7 +104,7 @@ fi
 # download latest
 curl --connect-timeout 10 --retry 5 -o ${ARCHIVE} ${LATEST_LOAD} 
 
-# unpack into /usr/local/<multitool home>
+# unpack into /usr/local/<load home>
 mkdir -p ${UNARCHIVED}
 tar -xzf ${ARCHIVE} -C ${UNARCHIVED}
 
@@ -141,7 +141,7 @@ export PATH=\$PATH:\$LOAD_HOME/bin
 EOF
 
   echo "Successfully updated ${USER_HOME}/${BASH_PROFILE} with new PATH information."
-elif [ -z "`which multitool`" ]; then
+elif [ -z "`which load`" ]; then
 
   echo "To complete installation, add \"${LOAD_HOME}/bin\" to the PATH."
 fi

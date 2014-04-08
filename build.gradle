@@ -52,9 +52,9 @@ repositories {
   maven{ url 'http://conjars.org/repo/' }
 }
 
-ext.cascadingVersion = '2.5.2'
+ext.cascadingVersion = '2.6.0-wip-+'
 ext.hadoopVersion = '1.2.1'
-ext.hadoop2Version = '2.2.0'
+ext.hadoop2Version = '2.3.0'
 ext.cascadingChanging = cascadingVersion.endsWith( ' -dev' );
 ext.buildDate = new SimpleDateFormat( "yyyyMMdd" ).format( new Date() )
 ext.buildTimestamp = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" ).format( new Date() )
