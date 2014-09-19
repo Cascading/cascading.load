@@ -34,7 +34,7 @@ apply plugin: 'fatjar'
 apply from: "${rootDir}/etc/hadoop-shared-config.gradle"
 
 dependencies {
-  
+
   compile project( ':load-common' )
 
   compile group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, changing: true
@@ -65,7 +65,7 @@ fatJar {
   archiveName  = jarName
   exclude 'META-INF/*.DSA'
   exclude 'META-INF/LICENSE*'
-  
+
   manifest {
     attributes "Main-Class": "cascading/load/Main",
                'Build-Time': "${buildTimestamp}"

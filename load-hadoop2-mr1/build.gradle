@@ -34,7 +34,7 @@ apply plugin: 'fatjar'
 apply from: "${rootDir}/etc/hadoop-shared-config.gradle"
 
 dependencies {
-  
+
   compile project( ':load-common' )
 
   compile group: 'cascading', name: 'cascading-hadoop2-mr1', version: cascadingVersion
@@ -42,10 +42,10 @@ dependencies {
   provided( group: 'org.apache.hadoop', name: 'hadoop-common', version: hadoop2Version )
   provided( group: 'org.apache.hadoop', name: 'hadoop-client', version: hadoop2Version )
   provided group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
-  
+
   testCompile project( path: ':load-platform', configuration: 'testArtifacts' )
-  testCompile group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: hadoop2Version 
-  testCompile group: 'org.apache.hadoop', name: 'hadoop-minicluster', version: hadoop2Version 
+  testCompile group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: hadoop2Version
+  testCompile group: 'org.apache.hadoop', name: 'hadoop-minicluster', version: hadoop2Version
   testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-hadoop2-mr1', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-platform', version: cascadingVersion, classifier: 'tests', changing: true
@@ -56,6 +56,7 @@ fatJar {
   archiveName  = jarName
   exclude 'META-INF/*.DSA'
   exclude 'META-INF/LICENSE*'
+
   manifest {
     attributes "Main-Class": "cascading/load/Main",
             'Build-Time': "${buildTimestamp}"

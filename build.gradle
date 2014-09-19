@@ -32,8 +32,8 @@ buildscript {
     maven { url 'http://repo.springsource.org/plugins-release' }
   }
   dependencies {
-    classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.4'
-    classpath 'eu.appsatori:gradle-fatjar-plugin:0.2-rc1'
+    classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.5'
+    classpath 'eu.appsatori:gradle-fatjar-plugin:0.2'
   }
 }
 
@@ -54,7 +54,7 @@ repositories {
 
 ext.cascadingVersion = '2.6.0-wip-+'
 ext.hadoopVersion = '1.2.1'
-ext.hadoop2Version = '2.3.0'
+ext.hadoop2Version = '2.4.1'
 ext.cascadingChanging = cascadingVersion.endsWith( ' -dev' );
 ext.buildDate = new SimpleDateFormat( "yyyyMMdd" ).format( new Date() )
 ext.buildTimestamp = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" ).format( new Date() )
