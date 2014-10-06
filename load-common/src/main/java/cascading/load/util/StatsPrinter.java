@@ -36,13 +36,9 @@ public class StatsPrinter
       {
       if( !singlelineStats )
         writer.println();
+
       printFlowStats( writer, flowStat, singlelineStats );
       }
-    }
-
-  public static void printFlowStats( PrintWriter writer, FlowStats flowStat )
-    {
-    printFlowStats( writer, flowStat, false );
     }
 
   public static void printFlowStats( PrintWriter writer, FlowStats flowStat, boolean singlelineStats )
@@ -57,11 +53,6 @@ public class StatsPrinter
         writer.println();
       printStepStats( writer, stepStat, flowStat, singlelineStats );
       }
-    }
-
-  public static void printStepStats( PrintWriter writer, FlowStepStats stepStat )
-    {
-    printStepStats( writer, stepStat, null, false );
     }
 
   public static void printStepStats( PrintWriter writer, FlowStepStats stepStat, FlowStats flowStat, boolean singlelineStats )
@@ -102,7 +93,9 @@ public class StatsPrinter
     writer.printf( "  finish status: %s%n", cascadingStats.getStatus() );
     writer.printf( "  start:    %tT%n", cascadingStats.getStartTime() );
     writer.printf( "  finished: %tT%n", cascadingStats.getFinishedTime() );
+
     long duration = cascadingStats.getDuration() / 1000;
+
     writer.printf( "  duration: %d:%02d:%02d%n", duration / 3600, duration % 3600 / 60, duration % 60 );
 
     if( !cascadingStats.getChildren().isEmpty() )
@@ -116,10 +109,12 @@ public class StatsPrinter
   private static String getStepStatsName( FlowStepStats stepStat, String parent, boolean uniqueName )
     {
     String name = stepStat.getName();
+
     if( !uniqueName )
       return name;
 
     Matcher matchSeqNum = stepStatSeqNumPatt.matcher( name );
+
     if( matchSeqNum.find() )
       return parent + " " + matchSeqNum.group();
 

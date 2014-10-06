@@ -34,7 +34,7 @@ import cascading.load.pathological.PathologicalOnlyInnerJoin;
 import cascading.load.pipeline.ChainedAggregate;
 import cascading.load.pipeline.ChainedFunction;
 import cascading.load.pipeline.Pipeline;
-import cascading.load.platform.CascadeLoadPlatform;
+import cascading.load.platform.CascadingLoadPlatform;
 import cascading.load.platform.PlatformLoader;
 import cascading.load.util.StatsPrinter;
 import cascading.operation.DebugLevel;
@@ -55,7 +55,7 @@ public class Main
   private static final Logger LOG = Logger.getLogger( Options.class );
 
   private Options options;
-  private CascadeLoadPlatform platform;
+  private CascadingLoadPlatform platform;
 
   public static void main( String[] args ) throws Exception
     {
@@ -121,18 +121,20 @@ public class Main
       flows.add( new PathologicalOnlyInnerJoin( options, getDefaultProperties() ).createFlow() );
 
     if( options.isBreakingLoads() )
-      for (BreakingLoad breakingLoad : BreakingLoad.breakingLoads(options, getDefaultProperties() ))
-        flows.add( breakingLoad.createFlow()) ;
+      for( BreakingLoad breakingLoad : BreakingLoad.breakingLoads( options, getDefaultProperties() ) )
+        flows.add( breakingLoad.createFlow() );
 
     if( options.isWriteDotFile() )
+      {
       for( Flow flow : flows )
         {
         String file_name = flow.getName() + ".dot";
         LOG.info( "DOT file: " + file_name );
         flow.writeDOT( file_name );
         }
+      }
 
-    Cascade cascade = new CascadeConnector( getDefaultProperties() ).connect( flows.toArray( new Flow[ 0 ] ) );
+    Cascade cascade = new CascadeConnector( getDefaultProperties() ).connect( "load", flows );
 
     CascadeStats stats = cascade.getCascadeStats();
 
@@ -193,7 +195,11 @@ public class Main
       {
       String[] lines = outputStream.toString().split( "\n" );
 
-      Tap statsTap = platform.newTap( platform.newTextLine(), options.getStatsRoot(), SinkMode.REPLACE );
+      String statsRoot = options.getStatsRoot();
+
+      statsRoot += String.format( "%s-%d", platform.getClass().getSimpleName(), System.currentTimeMillis() );
+
+      Tap statsTap = platform.newTap( platform.newTextLine(), statsRoot, SinkMode.REPLACE );
 
       TupleEntryCollector tapWriter = platform.newTupleEntryCollector( statsTap );
 
@@ -206,7 +212,6 @@ public class Main
 
   protected Properties getDefaultProperties() throws IOException
     {
-
     Properties properties = platform.buildPlatformProperties( options );
 
     if( options.getAppName() != null )
@@ -216,7 +221,6 @@ public class Main
       AppProps.addApplicationTag( properties, options.getTags() );
 
     AppProps.addApplicationFramework( properties, "Load" );
-
 
     if( options.isDebugLogging() )
       {

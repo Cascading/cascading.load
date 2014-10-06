@@ -18,22 +18,20 @@
  * limitations under the License.
  */
 
-import org.apache.tools.ant.filters.ReplaceTokens
-
 buildscript {
   repositories {
-      mavenCentral()
+    mavenCentral()
   }
 
   dependencies {
-      classpath 'eu.appsatori:gradle-fatjar-plugin:0.2'
+    classpath 'eu.appsatori:gradle-fatjar-plugin:0.2'
   }
 }
 
 apply plugin: 'fatjar'
 
 dependencies {
-  
+
   compile project( ':load-common' )
 
   compile group: 'cascading', name: 'cascading-local', version: cascadingVersion, changing: true
@@ -41,7 +39,7 @@ dependencies {
   compile group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
   compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.6.1'
   compile group: 'log4j', name: 'log4j', version: '1.2.16'
-  
+
   testCompile project( path: ':load-platform', configuration: 'testArtifacts' )
   testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-local', version: cascadingVersion, classifier: 'tests', changing: true
@@ -51,13 +49,13 @@ dependencies {
 
 
 fatJar {
-  archiveName  = jarName
+  archiveName = jarName
   exclude 'META-INF/*.DSA'
   exclude 'META-INF/LICENSE*'
-  
+
   manifest {
     attributes "Main-Class": "cascading/load/Main",
-               'Build-Time': "${buildTimestamp}"
+            'Build-Time': "${buildTimestamp}"
   }
 }
 

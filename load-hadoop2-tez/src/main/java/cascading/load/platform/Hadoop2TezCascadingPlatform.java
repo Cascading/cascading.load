@@ -22,10 +22,14 @@
 package cascading.load.platform;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 
+import cascading.flow.FlowConnector;
 import cascading.flow.FlowProps;
-import cascading.flow.hadoop.HadoopFlowProcess;
+import cascading.flow.FlowRuntimeProps;
+import cascading.flow.tez.Hadoop2TezFlowConnector;
+import cascading.flow.tez.Hadoop2TezFlowProcess;
 import cascading.load.Options;
 import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
@@ -37,17 +41,29 @@ import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.collect.SpillableProps;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.compress.zlib.ZlibFactory;
-import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.log4j.Logger;
+import org.apache.tez.dag.api.TezConfiguration;
+import org.apache.tez.runtime.library.api.TezRuntimeConfiguration;
 
 /**
- * Base class for all hadoop platform implementations.
+ * Implementation of CascadeLoadPlatform for hadoop2-tez.
  */
-public abstract class BaseHadoopCascadePlatform  implements CascadeLoadPlatform
+public class Hadoop2TezCascadingPlatform implements CascadingLoadPlatform
   {
+  private static final Logger LOG = Logger.getLogger( Hadoop2TezCascadingPlatform.class );
 
-  private static final Logger LOG = Logger.getLogger( BaseHadoopCascadePlatform.class );
+  @Override
+  public FlowConnector newFlowConnector()
+    {
+    return new Hadoop2TezFlowConnector();
+    }
+
+  @Override
+  public FlowConnector newFlowConnector( Map<Object, Object> properties )
+    {
+    return new Hadoop2TezFlowConnector( properties );
+    }
 
   @Override
   public Tap newTap( Scheme scheme, String stringPath )
@@ -64,7 +80,7 @@ public abstract class BaseHadoopCascadePlatform  implements CascadeLoadPlatform
   @Override
   public TupleEntryCollector newTupleEntryCollector( Tap tap ) throws IOException
     {
-    return tap.openForWrite( new HadoopFlowProcess() );
+    return tap.openForWrite( new Hadoop2TezFlowProcess() );
     }
 
   @Override
@@ -89,11 +105,12 @@ public abstract class BaseHadoopCascadePlatform  implements CascadeLoadPlatform
   public void writeDictionaryData( Tuple data, String path, int numberOfFiles ) throws IOException
     {
     Tap tap = newTap( newTextLine(), path );
-    JobConf jobConf = new JobConf();
+    TezConfiguration configuration = new TezConfiguration();
+
     for( int i = 0; i < numberOfFiles; i++ )
       {
-      jobConf.setInt( "mapred.task.partition", i );
-      TupleEntryCollector writer = tap.openForWrite( new HadoopFlowProcess( jobConf ) );
+      configuration.setInt( "mapred.task.partition", i );
+      TupleEntryCollector writer = tap.openForWrite( new Hadoop2TezFlowProcess( configuration ) );
       writer.add( data );
       writer.close();
       }
@@ -102,44 +119,61 @@ public abstract class BaseHadoopCascadePlatform  implements CascadeLoadPlatform
   @Override
   public Properties buildPlatformProperties( Options options )
     {
-    Properties properties = new Properties(  );
+    Properties properties = new Properties();
     properties.setProperty( SpillableProps.LIST_THRESHOLD, Integer.toString( options.getTupleSpillThreshold() ) );
 
 //    properties.setProperty( "mapred.output.compress", "true" );
     properties.setProperty( "mapred.output.compression.codec", "org.apache.hadoop.io.compress.GzipCodec" );
     properties.setProperty( "mapred.output.compression.type", "BLOCK" );
-    properties.setProperty( "mapred.compress.map.output", "true" );
+    properties.setProperty( "mapreduce.output.fileoutputformat.compress.codec", "org.apache.hadoop.io.compress.GzipCodec" );
+    properties.setProperty( "mapreduce.output.fileoutputformat.compress.type", "BLOCK" );
+
+    properties.setProperty( YarnConfiguration.DEBUG_NM_DELETE_DELAY_SEC, "-1" );
+    properties.setProperty( TezConfiguration.TEZ_GENERATE_DEBUG_ARTIFACTS, "true" );
+
+    properties.setProperty( TezConfiguration.TEZ_AM_CONTAINER_REUSE_ENABLED, "false" ); // disabled to bypass deadlock
+
+    properties.setProperty( TezRuntimeConfiguration.TEZ_RUNTIME_COMPRESS, "true" );
+
+    if( HadoopUtil.hasNativeZlib() )
+      properties.setProperty( TezRuntimeConfiguration.TEZ_RUNTIME_COMPRESS_CODEC, "org.apache.hadoop.io.compress.GzipCodec" );
 
     // -XX:+UseParallelOldGC -XX:ParallelGCThreads=1
-    properties.setProperty( "mapred.child.java.opts", "-server " + options.getChildVMOptions() );
+    properties.setProperty( TezConfiguration.TEZ_TASK_LAUNCH_CMD_OPTS, "-server " + options.getChildVMOptions() );
 
     if( options.getNumDefaultMappers() != -1 )
-      properties.setProperty( "mapred.map.tasks", Integer.toString( options.getNumDefaultMappers() ) );
+      LOG.warn( "getNumDefaultMappers not honored" );
 
     if( options.getNumDefaultReducers() != -1 )
-      properties.setProperty( "mapred.reduce.tasks", Integer.toString( options.getNumDefaultReducers() ) );
+      properties.setProperty( FlowRuntimeProps.GATHER_PARTITIONS, Integer.toString( options.getNumDefaultReducers() ) );
 
-    properties.setProperty( "mapred.map.tasks.speculative.execution", options.isMapSpecExec() ? "true" : "false" );
-    properties.setProperty( "mapred.reduce.tasks.speculative.execution", options.isReduceSpecExec() ? "true" : "false" );
+//    properties.setProperty( "mapred.map.tasks.speculative.execution", options.isMapSpecExec() ? "true" : "false" );
+//    properties.setProperty( "mapred.reduce.tasks.speculative.execution", options.isReduceSpecExec() ? "true" : "false" );
 
-    properties.setProperty( "dfs.block.size", Long.toString( options.getBlockSizeMB() * 1024 * 1024 ) );
+    properties.setProperty( "dfs.blocksize", Long.toString( options.getBlockSizeMB() * 1024 * 1024 ) );
 
     // need to try and detect if native codecs are loaded, if so, use gzip
     if( HadoopUtil.hasNativeZlib() )
       {
       properties.setProperty( "mapred.map.output.compression.codec", "org.apache.hadoop.io.compress.GzipCodec" );
+      properties.setProperty( "mapreduce.output.fileoutputformat.compress.codec", "org.apache.hadoop.io.compress.GzipCodec" );
       LOG.info( "using native codec for gzip" );
       }
     else
       {
       properties.setProperty( "mapred.map.output.compression.codec", "org.apache.hadoop.io.compress.DefaultCodec" );
+      properties.setProperty( "mapreduce.output.fileoutputformat.compress.codec", "org.apache.hadoop.io.compress.DefaultCodec" );
       LOG.info( "native codec not found" );
       }
 
     for( String property : options.getHadoopProperties() )
       {
       String[] split = property.split( "=" );
-      properties.setProperty( split[ 0 ], split[ 1 ] );
+
+      if( split.length == 2 )
+        properties.setProperty( split[ 0 ], split[ 1 ] );
+      else
+        properties.setProperty( split[ 0 ], null );
       }
 
     if( options.getMaxConcurrentSteps() != -1 )
@@ -151,8 +185,8 @@ public abstract class BaseHadoopCascadePlatform  implements CascadeLoadPlatform
   @Override
   public void cleanDirectories( String... paths ) throws IOException
     {
-    FileSystem fs = FileSystem.get( new JobConf() );
-    for ( String path : paths)
+    FileSystem fs = FileSystem.get( new TezConfiguration() );
+    for( String path : paths )
       fs.delete( new Path( path ), true );
     }
 

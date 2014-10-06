@@ -9,7 +9,6 @@ import cascading.flow.FlowConnector;
 import cascading.flow.local.LocalFlowConnector;
 import cascading.flow.local.LocalFlowProcess;
 import cascading.load.Options;
-import cascading.load.platform.CascadeLoadPlatform;
 import cascading.load.util.Util;
 import cascading.scheme.Scheme;
 import cascading.tap.SinkMode;
@@ -19,7 +18,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntryCollector;
 
-public class LocalCascadePlatform implements CascadeLoadPlatform
+public class LocalCascadePlatform implements CascadingLoadPlatform
   {
 
   @Override
@@ -82,13 +81,13 @@ public class LocalCascadePlatform implements CascadeLoadPlatform
   @Override
   public Properties buildPlatformProperties( Options options )
     {
-    return new Properties(  );
+    return new Properties();
     }
 
   @Override
   public void cleanDirectories( String... paths ) throws IOException
     {
-    for ( String path: paths)
+    for( String path : paths )
       Util.deleteRecursive( new File( path ) );
     }
 

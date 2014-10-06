@@ -19,8 +19,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntryCollector;
 
-
-public interface CascadeLoadPlatform
+public interface CascadingLoadPlatform
   {
   public Tap newTap( Scheme scheme, String stringPath );
 
@@ -42,10 +41,9 @@ public interface CascadeLoadPlatform
 
   public Properties buildPlatformProperties( Options options );
 
-  public void cleanDirectories( String ... paths ) throws IOException;
+  public void cleanDirectories( String... paths ) throws IOException;
 
   public int getMaxConcurrentMappers();
 
   public int getMaxConcurrentReducers();
-
   }

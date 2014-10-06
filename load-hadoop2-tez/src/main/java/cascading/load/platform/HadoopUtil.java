@@ -24,45 +24,48 @@ package cascading.load.platform;
 import java.io.IOException;
 
 import org.apache.hadoop.io.compress.zlib.ZlibFactory;
-import org.apache.hadoop.mapred.ClusterStatus;
-import org.apache.hadoop.mapred.JobClient;
-import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.yarn.client.api.YarnClient;
+import org.apache.hadoop.yarn.exceptions.YarnException;
+import org.apache.tez.dag.api.TezConfiguration;
 
 /**
  * Utility class to fetch meta information about the current hadoop environment.
  */
 public class HadoopUtil
   {
-  public static int getNumTaskTrackers( JobConf jobConf )
+  public static int getNumNodeManagers( TezConfiguration jobConf )
     {
     try
       {
-      JobClient jobClient = new JobClient( jobConf );
-      ClusterStatus status = jobClient.getClusterStatus();
+      YarnClient yarnClient = YarnClient.createYarnClient();
 
-      return status.getTaskTrackers();
+      return yarnClient.getYarnClusterMetrics().getNumNodeManagers();
       }
     catch( IOException exception )
       {
-      throw new RuntimeException( "failed accessing hadoop cluster", exception );
+      throw new RuntimeException( "failed accessing yarn cluster", exception );
+      }
+    catch( YarnException exception )
+      {
+      throw new RuntimeException( "failed accessing yarn cluster", exception );
       }
     }
 
   public static int getMaxConcurrentMappers()
     {
-    JobConf jobConf = new JobConf();
+    TezConfiguration jobConf = new TezConfiguration();
 
-    return getNumTaskTrackers( jobConf ) * jobConf.getInt( "mapred.tasktracker.map.tasks.maximum", 2 );
+    return getNumNodeManagers( jobConf ) * jobConf.getInt( "yarn.nodemanager.resource.cpu-vcores", 2 );
     }
 
   public static int getMaxConcurrentReducers()
     {
-    JobConf jobConf = new JobConf();
-    return getNumTaskTrackers( jobConf ) * jobConf.getInt( "mapred.tasktracker.reduce.tasks.maximum", 2 );
+    TezConfiguration jobConf = new TezConfiguration();
+    return getNumNodeManagers( jobConf ) * jobConf.getInt( "yarn.nodemanager.resource.cpu-vcores", 2 );
     }
 
   public static boolean hasNativeZlib()
     {
-    return ZlibFactory.isNativeZlibLoaded( new JobConf() );
+    return ZlibFactory.isNativeZlibLoaded( new TezConfiguration() );
     }
   }

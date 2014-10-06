@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import cascading.load.platform.CascadeLoadPlatform;
+import cascading.load.platform.CascadingLoadPlatform;
 import cascading.load.platform.PlatformLoader;
 import cascading.load.util.Util;
 import cascading.util.Version;
@@ -63,7 +63,6 @@ public class Options
 
     return stripped;
     }
-
 
   private class OptionGlyph
     {
@@ -177,7 +176,6 @@ public class Options
       }
     }
 
-
   //////////////////////////////////////////////////////////////////////
   // option variables
   String appName = null;
@@ -208,6 +206,9 @@ public class Options
   boolean cleanWorkFiles = false;
 
   boolean runAllLoads = false;
+  boolean certifyTests = false;
+  boolean comparisonLoads = false;
+  boolean breakingLoads = false;
 
   boolean dataGenerate;
   int dataNumFiles = 100;
@@ -221,7 +222,6 @@ public class Options
   float dataStddevWords = -1;
   boolean dataConsume = false;
 
-  boolean certifyTests;
   boolean countSort;
   boolean staggeredSort;
   boolean fullTupleGroup;
@@ -233,20 +233,17 @@ public class Options
   boolean rightJoin;
 
   boolean pathologicalInnerJoin;
-  boolean breakingLoads;
 
   boolean pipeline;
   boolean chainedAggregate;
   boolean chainedFunction;
   int hashModulo = -1;
   boolean writeDotFile = false;
+  boolean writeTraceFiles = false;
   private String platformName;
-
 
   OptionGlyph helpOption;
   OptionGlyph markOption;
-
-
 
   public Options()
     {
@@ -258,59 +255,64 @@ public class Options
     glyph = new OptionGlyph( asList( "--markdown" ), "generateMarkdown", null, false, false, "generate help text as GitHub Flavored Markdown" );
     this.markOption = glyph;
 
-    glyph = new OptionGlyph( asList( "-SLS" ), "setSinglelineStats", null, false, false, "single-line stats" );
-    glyph = new OptionGlyph( asList( "-X" ), "setDebugLogging", null, false, false, "debug logging" );
-    glyph = new OptionGlyph( asList( "-BS" ), "setBlockSizeMB", int.class, false, false, "default block size" );
-    glyph = new OptionGlyph( asList( "-NM" ), "setNumDefaultMappers", int.class, false, false, "default num mappers" );
-    glyph = new OptionGlyph( asList( "-NR" ), "setNumDefaultReducers", int.class, false, false, "default num reducers" );
-    glyph = new OptionGlyph( asList( "-PM" ), "setPercentMaxMappers", float.class, false, false, "percent of max mappers" );
-    glyph = new OptionGlyph( asList( "-PR" ), "setPercentMaxReducers", float.class, false, false, "percent of max reducers" );
-    glyph = new OptionGlyph( asList( "-EM" ), "setMapSpecExec", null, false, false, "enable map side speculative execution" );
-    glyph = new OptionGlyph( asList( "-ER" ), "setReduceSpecExec", null, false, false, "enable reduce side speculative execution" );
-    glyph = new OptionGlyph( asList( "-TS" ), "setTupleSpillThreshold", int.class, false, false, "tuple spill threshold, default 100,000" );
-    glyph = new OptionGlyph( asList( "-DH" ), "setHadoopProperties", String.class, false, true, "optional Hadoop config job properties (can be used multiple times)" );
-    glyph = new OptionGlyph( asList( "-MB" ), "setNumMappersPerBlock", int.class, false, false, "mappers per block (unused)" );
-    glyph = new OptionGlyph( asList( "-RM" ), "setNumReducersPerMapper", int.class, false, false, "reducers per mapper (unused)" );
-    glyph = new OptionGlyph( asList( "-I" ), "setInputRoot", String.class, true, false, "load input data path (generated data arrives here)" );
-    glyph = new OptionGlyph( asList( "-O" ), "setOutputRoot", String.class, true, false, "output path for load results" );
-    glyph = new OptionGlyph( asList( "-W" ), "setWorkingRoot", String.class, false, false, "input/output path for working files" );
-    glyph = new OptionGlyph( asList( "-S" ), "setStatsRoot", String.class, false, false, "output path for job stats" );
-    glyph = new OptionGlyph( asList( "-CWF" ), "setCleanWorkFiles", null, false, false, "clean work files" );
-    glyph = new OptionGlyph( asList( "-CVMO" ), "setChildVMOptions", String.class, false, false, "child JVM options" );
-    glyph = new OptionGlyph( asList( "-MXCF" ), "setMaxConcurrentFlows", int.class, false, false, "maximum concurrent flows" );
-    glyph = new OptionGlyph( asList( "-MXCS" ), "setMaxConcurrentSteps", int.class, false, false, "maximum concurrent steps" );
-    glyph = new OptionGlyph( asList( "-ALL" ), "setRunAllLoads", null, false, false, "run all available (non-discrete) loads" );
-    glyph = new OptionGlyph( asList( "-LM" ), "setLocalMode", null, false, false, "use the local platform" );
-    glyph = new OptionGlyph( asList( "-g", "--generate" ), "setDataGenerate", null, false, false, "generate test data" );
-    glyph = new OptionGlyph( asList( "-gf", "--generate-num-files" ), "setDataNumFiles", int.class, false, false, "num files to create" );
-    glyph = new OptionGlyph( asList( "-gs", "--generate-file-size" ), "setDataFileSizeMB", float.class, false, false, "size in MB of each file" );
-    glyph = new OptionGlyph( asList( "-gmax", "--generate-max-words" ), "setDataMaxWords", int.class, false, false, "max words per line, inclusive" );
-    glyph = new OptionGlyph( asList( "-gmin", "--generate-min-words" ), "setDataMinWords", int.class, false, false, "min words per line, inclusive" );
-    glyph = new OptionGlyph( asList( "-gd", "--generate-word-delimiter" ), "setDataWordDelimiter", String.class, false, false, "delimiter for words" );
-    glyph = new OptionGlyph( asList( "-gbf", "--generate-blocks-per-file" ), "setFillBlocksPerFile", int.class, false, false, "fill num blocks per file" );
-    glyph = new OptionGlyph( asList( "-gfm", "--generate-files-per-mapper" ), "setFillFilesPerAvailMapper", int.class, false, false, "fill num files per available mapper" );
-    glyph = new OptionGlyph( asList( "-gwm", "--generate-words-mean" ), "setDataMeanWords", float.class, false, false, "mean modifier [-1,1] of a normal distribution from dictionary" );
-    glyph = new OptionGlyph( asList( "-gws", "--generate-words-stddev" ), "setDataStddevWords", float.class, false, false, "standard-deviation modifier (0,1) of a normal distribution from dictionary" );
-    glyph = new OptionGlyph( asList( "-cd", "--consume" ), "setDataConsume", null, false, false, "consume test data" );
-    glyph = new OptionGlyph( asList( "-s", "--certify-tests" ), "setCertifyTests", null, false, false, "run certification tests" );
-    glyph = new OptionGlyph( asList( "-c", "--count-sort" ), "setCountSort", null, false, false, "run count sort load" );
-    glyph = new OptionGlyph( asList( "-ss", "--staggered-sort" ), "setStaggeredSort", null, false, false, "run staggered compare sort load" );
-    glyph = new OptionGlyph( asList( "-fg", "--full-group" ), "setFullTupleGroup", null, false, false, "run full tuple grouping load" );
-    glyph = new OptionGlyph( asList( "-m", "--multi-join" ), "setMultiJoin", null, false, false, "run multi join load" );
-    glyph = new OptionGlyph( asList( "-ij", "--inner-join" ), "setInnerJoin", null, false, false, "run inner join load" );
-    glyph = new OptionGlyph( asList( "-pij", "--pathological-inner-join" ), "setPathologicalInnerJoin", null, false, false, "run pathological inner join load" );
-    glyph = new OptionGlyph( asList( "-dt", "--destructive-testing" ), "setBreakingLoads", null, false, false, "run loads that are intended to produce errors" );
-    glyph = new OptionGlyph( asList( "-oj", "--outer-join" ), "setOuterJoin", null, false, false, "run outer join load" );
-    glyph = new OptionGlyph( asList( "-lj", "--left-join" ), "setLeftJoin", null, false, false, "run left join load" );
-    glyph = new OptionGlyph( asList( "-rj", "--right-join" ), "setRightJoin", null, false, false, "run right join load" );
-    glyph = new OptionGlyph( asList( "-p", "--pipeline" ), "setPipeline", null, false, false, "run pipeline load" );
-    glyph = new OptionGlyph( asList( "-pm", "--pipeline-hash-modulo" ), "setHashModulo", int.class, false, false, "hash modulo for managing key distribution" );
-    glyph = new OptionGlyph( asList( "-ca", "--chained-aggregate" ), "setChainedAggregate", null, false, false, "run chained aggregate load" );
-    glyph = new OptionGlyph( asList( "-cf", "--chained-function" ), "setChainedFunction", null, false, false, "run chained function load" );
-    glyph = new OptionGlyph( asList( "-wd", "--write-dot" ), "setWriteDotFile", null, false, false, "write DOT file" );
-    glyph = new OptionGlyph( asList( "-an", "--app-name" ), "setAppName", String.class, false, false, "set the application name" );
-    glyph = new OptionGlyph( asList( "-tn", "--tags" ), "setTags", String.class, false, false, "set the application tags, comma separated" );
-    glyph = new OptionGlyph( asList( "-pf", "--platform" ), "setPlatformName", String.class, false, false, "set platform" );
+    new OptionGlyph( asList( "-pf", "--platform" ), "setPlatformName", String.class, false, false, "set platform" );
+
+    new OptionGlyph( asList( "-ALL" ), "setRunAllLoads", null, false, false, "run all available loads (not intended to produce errors)" );
+    new OptionGlyph( asList( "-dt", "--destructive-testing" ), "setBreakingLoads", null, false, false, "run loads that are intended to produce errors" );
+    new OptionGlyph( asList( "-ct", "--comparison-testing" ), "setComparisonLoads", null, false, false, "run loads that are intended for comparison across platforms" );
+
+    new OptionGlyph( asList( "-SLS" ), "setSinglelineStats", null, false, false, "single-line stats" );
+    new OptionGlyph( asList( "-X" ), "setDebugLogging", null, false, false, "debug logging" );
+    new OptionGlyph( asList( "-BS" ), "setBlockSizeMB", int.class, false, false, "default block size" );
+    new OptionGlyph( asList( "-NM" ), "setNumDefaultMappers", int.class, false, false, "default num mappers" );
+    new OptionGlyph( asList( "-NR" ), "setNumDefaultReducers", int.class, false, false, "default num reducers" );
+    new OptionGlyph( asList( "-PM" ), "setPercentMaxMappers", float.class, false, false, "percent of max mappers" );
+    new OptionGlyph( asList( "-PR" ), "setPercentMaxReducers", float.class, false, false, "percent of max reducers" );
+    new OptionGlyph( asList( "-EM" ), "setMapSpecExec", null, false, false, "enable map side speculative execution" );
+    new OptionGlyph( asList( "-ER" ), "setReduceSpecExec", null, false, false, "enable reduce side speculative execution" );
+    new OptionGlyph( asList( "-TS" ), "setTupleSpillThreshold", int.class, false, false, "tuple spill threshold, default 100,000" );
+    new OptionGlyph( asList( "-DH" ), "setHadoopProperties", String.class, false, true, "optional Hadoop config job properties (can be used multiple times)" );
+//    new OptionGlyph( asList( "-MB" ), "setNumMappersPerBlock", int.class, false, false, "mappers per block (unused)" );
+//    new OptionGlyph( asList( "-RM" ), "setNumReducersPerMapper", int.class, false, false, "reducers per mapper (unused)" );
+    new OptionGlyph( asList( "-I" ), "setInputRoot", String.class, true, false, "load input data path (generated data arrives here)" );
+    new OptionGlyph( asList( "-O" ), "setOutputRoot", String.class, true, false, "output path for load results" );
+    new OptionGlyph( asList( "-W" ), "setWorkingRoot", String.class, false, false, "input/output path for working files" );
+    new OptionGlyph( asList( "-S" ), "setStatsRoot", String.class, false, false, "output path for job stats" );
+    new OptionGlyph( asList( "-CWF" ), "setCleanWorkFiles", null, false, false, "clean all files from prior run" );
+    new OptionGlyph( asList( "-CVMO" ), "setChildVMOptions", String.class, false, false, "child JVM options" );
+    new OptionGlyph( asList( "-MXCF" ), "setMaxConcurrentFlows", int.class, false, false, "maximum concurrent flows" );
+    new OptionGlyph( asList( "-MXCS" ), "setMaxConcurrentSteps", int.class, false, false, "maximum concurrent steps" );
+
+    new OptionGlyph( asList( "-g", "--generate" ), "setDataGenerate", null, false, false, "generate test data" );
+    new OptionGlyph( asList( "-gf", "--generate-num-files" ), "setDataNumFiles", int.class, false, false, "num files to create" );
+    new OptionGlyph( asList( "-gs", "--generate-file-size" ), "setDataFileSizeMB", float.class, false, false, "size in MB of each file" );
+    new OptionGlyph( asList( "-gmax", "--generate-max-words" ), "setDataMaxWords", int.class, false, false, "max words per line, inclusive" );
+    new OptionGlyph( asList( "-gmin", "--generate-min-words" ), "setDataMinWords", int.class, false, false, "min words per line, inclusive" );
+    new OptionGlyph( asList( "-gd", "--generate-word-delimiter" ), "setDataWordDelimiter", String.class, false, false, "delimiter for words" );
+    new OptionGlyph( asList( "-gbf", "--generate-blocks-per-file" ), "setFillBlocksPerFile", int.class, false, false, "fill num blocks per file" );
+    new OptionGlyph( asList( "-gfm", "--generate-files-per-mapper" ), "setFillFilesPerAvailMapper", int.class, false, false, "fill num files per available mapper" );
+    new OptionGlyph( asList( "-gwm", "--generate-words-mean" ), "setDataMeanWords", float.class, false, false, "mean modifier [-1,1] of a normal distribution from dictionary" );
+    new OptionGlyph( asList( "-gws", "--generate-words-stddev" ), "setDataStddevWords", float.class, false, false, "standard-deviation modifier (0,1) of a normal distribution from dictionary" );
+
+    new OptionGlyph( asList( "-cd", "--consume" ), "setDataConsume", null, false, false, "consume test data" );
+    new OptionGlyph( asList( "-s", "--certify-tests" ), "setCertifyTests", null, false, false, "run certification tests" );
+    new OptionGlyph( asList( "-c", "--count-sort" ), "setCountSort", null, false, false, "run count sort load" );
+    new OptionGlyph( asList( "-ss", "--staggered-sort" ), "setStaggeredSort", null, false, false, "run staggered compare sort load" );
+    new OptionGlyph( asList( "-fg", "--full-group" ), "setFullTupleGroup", null, false, false, "run full tuple grouping load" );
+    new OptionGlyph( asList( "-m", "--multi-join" ), "setMultiJoin", null, false, false, "run multi join load" );
+    new OptionGlyph( asList( "-ij", "--inner-join" ), "setInnerJoin", null, false, false, "run inner join load" );
+    new OptionGlyph( asList( "-pij", "--pathological-inner-join" ), "setPathologicalInnerJoin", null, false, false, "run pathological inner join load" );
+    new OptionGlyph( asList( "-oj", "--outer-join" ), "setOuterJoin", null, false, false, "run outer join load" );
+    new OptionGlyph( asList( "-lj", "--left-join" ), "setLeftJoin", null, false, false, "run left join load" );
+    new OptionGlyph( asList( "-rj", "--right-join" ), "setRightJoin", null, false, false, "run right join load" );
+    new OptionGlyph( asList( "-p", "--pipeline" ), "setPipeline", null, false, false, "run pipeline load" );
+    new OptionGlyph( asList( "-pm", "--pipeline-hash-modulo" ), "setHashModulo", int.class, false, false, "hash modulo for managing key distribution" );
+    new OptionGlyph( asList( "-ca", "--chained-aggregate" ), "setChainedAggregate", null, false, false, "run chained aggregate load" );
+    new OptionGlyph( asList( "-cf", "--chained-function" ), "setChainedFunction", null, false, false, "run chained function load" );
+    new OptionGlyph( asList( "-wd", "--write-dot" ), "setWriteDotFile", null, false, false, "write DOT file" );
+    new OptionGlyph( asList( "-wt", "--write-trace" ), "setWriteTraceFiles", null, false, false, "write planner trace files" );
+    new OptionGlyph( asList( "-an", "--app-name" ), "setAppName", String.class, false, false, "set the application name" );
+    new OptionGlyph( asList( "-tn", "--tags" ), "setTags", String.class, false, false, "set the application tags, comma separated" );
     }
 
   public void parseArgs( String[] args ) throws Exception
@@ -335,14 +337,12 @@ public class Options
     else
       {
       for( Object obj : optionList )
-        {
         ( (OptionGlyph) obj ).attempt( opts );
-        }
 
       if( !( this.runAllLoads || this.dataGenerate || this.dataConsume || this.countSort || this.certifyTests ||
         this.staggeredSort || this.fullTupleGroup || this.multiJoin || this.innerJoin || this.outerJoin ||
         this.leftJoin || this.rightJoin || this.pipeline || this.chainedAggregate || this.chainedFunction ||
-        this.pathologicalInnerJoin || this.breakingLoads) )
+        this.pathologicalInnerJoin || this.breakingLoads ) )
         {
         throw new Exception( "At least one flow must be selected, to run Load" );
         }
@@ -673,7 +673,6 @@ public class Options
     this.maxConcurrentSteps = maxConcurrentSteps;
     }
 
-
   private String makePathDir( String path )
     {
     if( path == null || path.isEmpty() )
@@ -693,6 +692,26 @@ public class Options
   public void setRunAllLoads( boolean runAllLoads )
     {
     this.runAllLoads = runAllLoads;
+    }
+
+  public boolean isCertifyTests()
+    {
+    return certifyTests;
+    }
+
+  public void setCertifyTests( boolean certifyTests )
+    {
+    this.certifyTests = certifyTests;
+    }
+
+  public boolean isComparisonLoads()
+    {
+    return comparisonLoads;
+    }
+
+  public void setComparisonLoads( boolean comparisonLoads )
+    {
+    this.comparisonLoads = comparisonLoads;
     }
 
 //////////////////////////////////
@@ -831,16 +850,6 @@ public class Options
     }
 
   ////////////////////////////////////////
-  public boolean isCertifyTests()
-    {
-    return certifyTests;
-    }
-
-  public void setCertifyTests( boolean certifyTests )
-    {
-    this.certifyTests = certifyTests;
-    }
-
   public boolean isCountSort()
     {
     return countSort;
@@ -923,13 +932,25 @@ public class Options
     this.rightJoin = rightJoin;
     }
 
-  public void setPathologicalInnerJoin( boolean pathologicalInnerJoin ) { this.pathologicalInnerJoin = pathologicalInnerJoin; }
+  public void setPathologicalInnerJoin( boolean pathologicalInnerJoin )
+    {
+    this.pathologicalInnerJoin = pathologicalInnerJoin;
+    }
 
-  public boolean isPathologicalInnerJoin() { return pathologicalInnerJoin; }
+  public boolean isPathologicalInnerJoin()
+    {
+    return pathologicalInnerJoin;
+    }
 
-  public void setBreakingLoads( boolean breakingLoads ) { this.breakingLoads = breakingLoads; }
+  public void setBreakingLoads( boolean breakingLoads )
+    {
+    this.breakingLoads = breakingLoads;
+    }
 
-  public boolean isBreakingLoads() { return breakingLoads; }
+  public boolean isBreakingLoads()
+    {
+    return breakingLoads;
+    }
 
   ////////////////////////////////////////
 
@@ -983,6 +1004,16 @@ public class Options
     this.writeDotFile = writeDotFile;
     }
 
+  public boolean isWriteTraceFiles()
+    {
+    return writeTraceFiles;
+    }
+
+  public void setWriteTraceFiles( boolean writeTraceFiles )
+    {
+    this.writeTraceFiles = writeTraceFiles;
+    }
+
   public void setPlatformName( String platformName )
     {
     this.platformName = platformName;
@@ -1001,7 +1032,15 @@ public class Options
       {
       setDataGenerate( true );
       setCountSort( true );
+      setFullTupleGroup( true );
+      setStaggeredSort( true );
+      setOuterJoin( true );
+      setInnerJoin( true );
+      setLeftJoin( true );
+      setRightJoin( true );
       setMultiJoin( true );
+      setChainedFunction( true );
+      setChainedAggregate( true );
       setPipeline( true );
       }
 
@@ -1012,7 +1051,18 @@ public class Options
       setMultiJoin( true );
       setPipeline( true );
       }
-    CascadeLoadPlatform platform = new PlatformLoader().loadPlatform( platformName );
+
+    if( isComparisonLoads() )
+      {
+      setDataGenerate( true );
+      setCountSort( true );
+      setMultiJoin( true );
+      setPipeline( true );
+      setDataConsume( true );
+      }
+
+    CascadingLoadPlatform platform = new PlatformLoader().loadPlatform( platformName );
+
     if( numDefaultMappers == -1 && percentMaxMappers != 0 )
       numDefaultMappers = (int) ( platform.getMaxConcurrentMappers() * percentMaxMappers );
 
@@ -1100,6 +1150,7 @@ public class Options
     sb.append( ", chainedFunction=" ).append( chainedFunction );
     sb.append( ", hashModulo=" ).append( hashModulo );
     sb.append( ", writeDotFile=" ).append( writeDotFile );
+    sb.append( ", writeTraceFiles=" ).append( writeTraceFiles );
     sb.append( ", help_option=" ).append( helpOption );
     sb.append( ", mark_option=" ).append( markOption );
     sb.append( ", platform=" ).append( platformName );

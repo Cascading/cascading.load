@@ -21,38 +21,16 @@
 
 package cascading.load.platform;
 
-import java.io.IOException;
 import java.util.Map;
-import java.util.Properties;
 
 import cascading.flow.FlowConnector;
-import cascading.flow.FlowProps;
-import cascading.flow.hadoop.HadoopFlowProcess;
 import cascading.flow.hadoop2.Hadoop2MR1FlowConnector;
-import cascading.load.Options;
-import cascading.scheme.Scheme;
-import cascading.tap.SinkMode;
-import cascading.tap.Tap;
-import cascading.tap.hadoop.Hfs;
-import cascading.tuple.Fields;
-import cascading.tuple.Tuple;
-import cascading.tuple.TupleEntryCollector;
-import cascading.tuple.collect.SpillableProps;
-import cascading.tuple.collect.SpillableTupleList;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.compress.zlib.ZlibFactory;
-import org.apache.hadoop.mapred.JobConf;
-import org.apache.log4j.Logger;
 
 /**
  * Implementation of CascadeLoadPlatform for hadoop2-mr1.
  */
-public class Hadoop2MR1CascadePlatform extends BaseHadoopCascadePlatform
+public class Hadoop2MR1CascadingPlatform extends BaseHadoopCascadingPlatform
   {
-
-  private static final Logger LOG = Logger.getLogger( Hadoop2MR1CascadePlatform.class );
-
   @Override
   public FlowConnector newFlowConnector()
     {
@@ -65,4 +43,8 @@ public class Hadoop2MR1CascadePlatform extends BaseHadoopCascadePlatform
     return new Hadoop2MR1FlowConnector( properties );
     }
 
+  protected String getMRFrameworkName()
+    {
+    return "yarn";
+    }
   }

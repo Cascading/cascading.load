@@ -29,9 +29,8 @@ import cascading.flow.hadoop.HadoopFlowConnector;
 /**
  * Implementation of CascadeLoadPlatform for hadoop.
  */
-public class HadoopCascadePlatform extends BaseHadoopCascadePlatform
+public class HadoopCascadingPlatform extends BaseHadoopCascadingPlatform
   {
-
   @Override
   public FlowConnector newFlowConnector()
     {
@@ -44,4 +43,8 @@ public class HadoopCascadePlatform extends BaseHadoopCascadePlatform
     return new HadoopFlowConnector( properties );
     }
 
+  protected String getMRFrameworkName()
+    {
+    return "classic";
+    }
   }

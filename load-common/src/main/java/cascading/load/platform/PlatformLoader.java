@@ -24,8 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import cascading.CascadingException;
-
 /**
  * A simple class to load the Platform from the CLASSPATH by looking for a file called "multitool/platform.properties"
  * and loading the class defined in there. A platform is required to have a no-arg Constructor to be properly loaded.
@@ -42,15 +40,16 @@ public class PlatformLoader
    * @param platformName The name of the platform to load.
    * @return A @{Platform} instance for the given name.
    */
-  public CascadeLoadPlatform loadPlatform( String platformName )
+  public CascadingLoadPlatform loadPlatform( String platformName )
     {
     Properties props = new Properties();
+
     try
       {
       InputStream is = getClass().getClassLoader().getResourceAsStream( PLATFORM_PROPERTIES_FILE_NAME );
+
       if( is == null )
-        throw new PlatformNotFoundException( String.format( "unable to locate '%s' on the classpath.",
-          PLATFORM_PROPERTIES_FILE_NAME ) );
+        throw new PlatformNotFoundException( String.format( "unable to locate '%s' on the classpath.", PLATFORM_PROPERTIES_FILE_NAME ) );
 
       props.load( is );
       }
@@ -58,14 +57,17 @@ public class PlatformLoader
       {
       throw new PlatformNotFoundException( exception );
       }
-    String name = props.getProperty( PLATFORM_NAME_PROPERTY );
-    if( !platformName.equals( name ) )
-      throw new PlatformNotFoundException( "Invalid platform. Trying to load " + name + " but found " + platformName);
 
-    String klass = props.getProperty( PLATFORM_CLASS_NAME_PROPERTY );
+    String name = props.getProperty( PLATFORM_NAME_PROPERTY );
+
+    if( !platformName.equals( name ) )
+      throw new PlatformNotFoundException( "Invalid platform. Trying to load " + name + " but found " + platformName );
+
+    String type = props.getProperty( PLATFORM_CLASS_NAME_PROPERTY );
+
     try
       {
-      return (CascadeLoadPlatform) Class.forName( klass ).newInstance();
+      return (CascadingLoadPlatform) Class.forName( type ).newInstance();
       }
     catch( ClassNotFoundException exception )
       {

@@ -18,8 +18,10 @@
  * limitations under the License.
  */
 
-import java.text.SimpleDateFormat
+
 import org.apache.tools.ant.filters.ReplaceTokens
+
+import java.text.SimpleDateFormat
 
 apply from: 'etc/version.gradle'
 apply from: 'etc/properties.gradle'
@@ -29,11 +31,12 @@ buildscript {
   repositories {
     mavenLocal()
     mavenCentral()
+    jcenter()
     maven { url 'http://repo.springsource.org/plugins-release' }
   }
   dependencies {
     classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.4'
-    classpath 'eu.appsatori:gradle-fatjar-plugin:0.2-rc1'
+    classpath 'eu.appsatori:gradle-fatjar-plugin:0.3'
   }
 }
 
@@ -43,23 +46,29 @@ configure( allprojects ) {
   apply plugin: 'propdeps-maven'
   apply plugin: 'propdeps-idea'
   apply plugin: 'propdeps-eclipse'
-  apply plugin: 'fatjar'
+  apply plugin: 'eu.appsatori.fatjar'
 }
 
 repositories {
   mavenLocal()
   mavenCentral()
-  maven{ url 'http://conjars.org/repo/' }
+  maven { url 'http://conjars.org/repo/' }
 }
 
-ext.cascadingVersion = '2.5.2'
+ext.cascadingVersion = '3.0.0-wip-dev'
 ext.hadoopVersion = '1.2.1'
-ext.hadoop2Version = '2.2.0'
+ext.hadoop2Version = '2.4.0'
+ext.tezVersion = '0.5.1'
 ext.cascadingChanging = cascadingVersion.endsWith( ' -dev' );
 ext.buildDate = new SimpleDateFormat( "yyyyMMdd" ).format( new Date() )
 ext.buildTimestamp = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" ).format( new Date() )
 ext.tarBaseName = "${rootProject.name}-${buildDate}"
 ext.finalTarName = "${tarBaseName}.tgz"
+
+allprojects {
+  sourceCompatibility = 1.7
+  targetCompatibility = 1.7
+}
 
 subprojects {
   ext.jarName = "${project.name}-${buildDate}.jar"
@@ -69,7 +78,7 @@ subprojects {
   apply plugin: 'eclipse'
   apply from: "${rootDir}/etc/testing.gradle"
 
-  repositories{
+  repositories {
     mavenLocal()
     mavenCentral()
     mavenRepo name: 'conjars', url: 'http://conjars.org/repo/'
@@ -97,7 +106,6 @@ subprojects {
     from sourceSets.test.allSource
     classifier = 'test-sources'
   }
-
 
   artifacts {
     testArtifacts testsJar
@@ -130,14 +138,14 @@ task distCopy( type: Copy, dependsOn: jar ) {
   from 'apl.txt'
   from( 'src/main/shell' ) { into 'bin' }
 
-  from( project ( ":load-hadoop" ).fatJar ) { into 'platform/hadoop/' }
-  from( project ( ":load-hadoop2-mr1" ).fatJar ) { into 'platform/hadoop2-mr1/' }
-  from( project ( ":load-local" ).fatJar ) { into 'platform/local/' }
-  from( "load-docs/build/asciidoc" ) {into 'docs'}
+  from( project( ":load-hadoop" ).fatJar ) { into 'platform/hadoop/' }
+  from( project( ":load-hadoop2-mr1" ).fatJar ) { into 'platform/hadoop2-mr1/' }
+  from( project( ":load-hadoop2-tez" ).fatJar ) { into 'platform/hadoop2-tez/' }
+  from( project( ":load-local" ).fatJar ) { into 'platform/local/' }
+  from( "load-docs/build/asciidoc" ) { into 'docs' }
 }
 
-distCopy.dependsOn( [":load-docs:asciidoctor", ":load-hadoop:fatJar", ":load-hadoop2-mr1:fatJar", "load-local:fatJar" ] )
-
+distCopy.dependsOn( [":load-docs:asciidoctor", ":load-hadoop:fatJar", ":load-hadoop2-mr1:fatJar", ":load-hadoop2-tez:fatJar", "load-local:fatJar"] )
 
 task buildTarball( type: Tar, dependsOn: distCopy ) {
   baseName = "${tarBaseName}"
@@ -150,22 +158,28 @@ task packageDist( dependsOn: buildTarball ) << {
   file( "${s3UploadArtifacts.source}/latest.txt" ).write( "http://${s3UploadArtifacts.destination}${finalTarName}" )
   //file( "${s3UploadArtifacts.source}/latest-sha1.txt" ).write( "http://${s3UploadArtifacts.destination}${finalTarName}.sha1" )
   //file( "${s3UploadArtifacts.source}/latest-md5.txt" ).write( "http://${s3UploadArtifacts.destination}${finalTarName}.md5" )
-  file( "${s3UploadArtifacts.source}/latest-hadoop-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-hadoop').jarName}" )
-  file( "${s3UploadArtifacts.source}/latest-hadoop2-mr1-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-hadoop2-mr1').jarName}" )
+  file( "${s3UploadArtifacts.source}/latest-hadoop-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-hadoop' ).jarName}" )
+  file( "${s3UploadArtifacts.source}/latest-hadoop2-mr1-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-hadoop2-mr1' ).jarName}" )
+  file( "${s3UploadArtifacts.source}/latest-hadoop2-tez-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-hadoop2-tez' ).jarName}" )
+
   copy {
-    from ( project( ":load-hadoop" ).fatJar )
+    from( project( ":load-hadoop" ).fatJar )
     into( "${s3UploadArtifacts.source}" )
   }
   copy {
-    from ( project( ":load-hadoop2-mr1" ).fatJar )
+    from( project( ":load-hadoop2-mr1" ).fatJar )
+    into( "${s3UploadArtifacts.source}" )
+  }
+  copy {
+    from( project( ":load-hadoop2-tez" ).fatJar )
     into( "${s3UploadArtifacts.source}" )
   }
   copy {
     from( "src/main/shell/util/install-load.sh" )
-      filter( ReplaceTokens, tokens: [
-              'location': project.s3Bucket.toString(),
-              'majorVersion': majorVersion.toString()
-      ] )
+    filter( ReplaceTokens, tokens: [
+            'location'    : project.s3Bucket.toString(),
+            'majorVersion': majorVersion.toString()
+    ] )
     into( "${s3UploadArtifacts.source}" )
   }
 }

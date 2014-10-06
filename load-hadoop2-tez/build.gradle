@@ -29,41 +29,33 @@ buildscript {
 }
 
 apply plugin: 'fatjar'
-apply from: "${rootDir}/etc/hadoop-shared-config.gradle"
 
 dependencies {
 
   compile project( ':load-common' )
 
-  compile group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, changing: true
-  compile group: 'cascading', name: 'cascading-local', version: cascadingVersion, changing: true
-  compile( group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.3' )
-  compile( group: 'log4j', name: 'log4j', version: '1.2.16' )
+  compile group: 'cascading', name: 'cascading-hadoop2-tez', version: cascadingVersion
 
-  provided group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
+  provided group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: hadoop2Version
+  provided group: 'org.apache.hadoop', name: 'hadoop-common', version: hadoop2Version
+  provided group: 'org.apache.hadoop', name: 'hadoop-hdfs', version: hadoop2Version
+  provided group: 'org.apache.tez', name: 'tez-api', version: tezVersion
+  provided group: 'org.apache.tez', name: 'tez-dag', version: tezVersion
+  provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
+
 
   testCompile project( path: ':load-platform', configuration: 'testArtifacts' )
+  testCompile group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: hadoop2Version
+  testCompile group: 'org.apache.hadoop', name: 'hadoop-minicluster', version: hadoop2Version
   testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true
-  testCompile group: 'cascading', name: 'cascading-hadoop', version: cascadingVersion, classifier: 'tests', changing: true
+  testCompile group: 'cascading', name: 'cascading-hadoop2-tez', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-platform', version: cascadingVersion, classifier: 'tests', changing: true
-
-  // hadoop deps
-  provided( group: 'org.apache.hadoop', name: 'hadoop-core', version: hadoopVersion ) {
-    exclude group: 'ant'
-    exclude group: 'junit'
-    exclude group: 'oro' // causes transient build maven failures, ftw
-  }
-
-  testCompile( group: 'org.apache.hadoop', name: 'hadoop-test', version: hadoopVersion ) {
-    exclude group: 'oro' // causes transient build maven failures, ftw
-  }
 }
 
 fatJar {
   archiveName = jarName
   exclude 'META-INF/*.DSA'
   exclude 'META-INF/LICENSE*'
-
   manifest {
     attributes "Main-Class": "cascading/load/Main",
             'Build-Time': "${buildTimestamp}"

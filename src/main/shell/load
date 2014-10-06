@@ -84,7 +84,7 @@ case $PLATFORM in
        source $BIN_DIR/hadoop-env
        EXEC="$HADOOP_EXEC jar $BASE_DIR/platform/$PLATFORM/*.jar"
        ;;
-   hadoop2-mr1)
+   hadoop2-tez | hadoop2-mr1)
        source $BIN_DIR/yarn-env
        EXEC="$YARN_EXEC jar $BASE_DIR/platform/$PLATFORM/*.jar"
        ;;
