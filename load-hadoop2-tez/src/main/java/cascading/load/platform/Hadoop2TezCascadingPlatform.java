@@ -131,7 +131,7 @@ public class Hadoop2TezCascadingPlatform implements CascadingLoadPlatform
     properties.setProperty( YarnConfiguration.DEBUG_NM_DELETE_DELAY_SEC, "-1" );
     properties.setProperty( TezConfiguration.TEZ_GENERATE_DEBUG_ARTIFACTS, "true" );
 
-    properties.setProperty( TezConfiguration.TEZ_AM_CONTAINER_REUSE_ENABLED, "false" ); // disabled to bypass deadlock
+//    properties.setProperty( TezConfiguration.TEZ_AM_CONTAINER_REUSE_ENABLED, "false" ); // disabled to bypass deadlock
 
     properties.setProperty( TezRuntimeConfiguration.TEZ_RUNTIME_COMPRESS, "true" );
 

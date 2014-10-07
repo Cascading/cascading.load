@@ -247,13 +247,9 @@ public class Options
 
   public Options()
     {
-    OptionGlyph glyph;
+    this.helpOption = new OptionGlyph( asList( "-h", "--help" ), "printUsageWrapper", null, false, false, "print this help text" );
 
-    glyph = new OptionGlyph( asList( "-h", "--help" ), "printUsageWrapper", null, false, false, "print this help text" );
-    this.helpOption = glyph;
-
-    glyph = new OptionGlyph( asList( "--markdown" ), "generateMarkdown", null, false, false, "generate help text as GitHub Flavored Markdown" );
-    this.markOption = glyph;
+    this.markOption = new OptionGlyph( asList( "--markdown" ), "generateMarkdown", null, false, false, "generate help text as GitHub Flavored Markdown" );
 
     new OptionGlyph( asList( "-pf", "--platform" ), "setPlatformName", String.class, false, false, "set platform" );
 
