@@ -56,6 +56,7 @@ public class Main
 
   private Options options;
   private CascadingLoadPlatform platform;
+  private String statsRoot;
 
   public static void main( String[] args ) throws Exception
     {
@@ -189,15 +190,13 @@ public class Main
 
     writer.println( options );
 
-    StatsPrinter.printCascadeStats( writer, stats, options.isSinglelineStats() );
+    StatsPrinter.printStats( writer, stats, options.isSinglelineStats() );
 
     if( options.hasStatsRoot() )
       {
       String[] lines = outputStream.toString().split( "\n" );
 
-      String statsRoot = options.getStatsRoot();
-
-      statsRoot += String.format( "%s-%d", platform.getClass().getSimpleName(), System.currentTimeMillis() );
+      String statsRoot = getFullStatsRoot();
 
       Tap statsTap = platform.newTap( platform.newTextLine(), statsRoot, SinkMode.REPLACE );
 
@@ -208,6 +207,18 @@ public class Main
 
       tapWriter.close();
       }
+    }
+
+  public String getFullStatsRoot()
+    {
+    if( statsRoot != null )
+      return statsRoot;
+
+    statsRoot = options.getStatsRoot();
+
+    statsRoot += String.format( "%s-%d", platform.getClass().getSimpleName(), System.currentTimeMillis() );
+
+    return statsRoot;
     }
 
   protected Properties getDefaultProperties() throws IOException

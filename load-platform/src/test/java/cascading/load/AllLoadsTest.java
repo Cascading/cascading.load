@@ -22,6 +22,7 @@ package cascading.load;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.util.Properties;
@@ -75,12 +76,12 @@ public class AllLoadsTest extends LoadTestCase
     File inputPath = new File( generate.getInputPaths()[ 0 ] );
     assertTrue( inputPath.exists() );
     // it is a file on the local platform
-    if ( inputPath.isDirectory() )
-      assertEquals(inputPath.toString() , 6, inputPath.list().length );
+    if( inputPath.isDirectory() )
+      assertEquals( inputPath.toString(), 6, inputPath.list().length );
 
     File outputPath = new File( generate.getOutputPaths()[ 0 ] );
     assertTrue( outputPath.exists() );
-    if ( outputPath.isDirectory() )
+    if( outputPath.isDirectory() )
       assertEquals( outputPath.toString(), 8, outputPath.list().length ); // includes _SUCCESS and its crc
 
     options.setCountSort( true );
@@ -93,7 +94,7 @@ public class AllLoadsTest extends LoadTestCase
 
     outputPath = new File( countSort.getOutputPaths()[ 0 ] );
     assertTrue( outputPath.exists() );
-    if ( outputPath.isDirectory() )
+    if( outputPath.isDirectory() )
       assertEquals( outputPath.toString(), 4, outputPath.list().length );
 
     MultiJoin multiJoin = new MultiJoin( options, getProperties() );
@@ -104,11 +105,11 @@ public class AllLoadsTest extends LoadTestCase
 
     assertEquals( 4, multiJoin.getOutputPaths().length );
 
-    for ( String path: multiJoin.getOutputPaths() )
+    for( String path : multiJoin.getOutputPaths() )
       {
       outputPath = new File( path );
       assertTrue( outputPath.exists() );
-      if ( outputPath.isDirectory() )
+      if( outputPath.isDirectory() )
         assertEquals( outputPath.toString(), 4, outputPath.list().length );
       }
 
@@ -120,7 +121,7 @@ public class AllLoadsTest extends LoadTestCase
 
     outputPath = new File( pipeline.getOutputPaths()[ 0 ] );
     assertTrue( outputPath.exists() );
-    if ( outputPath.isDirectory() )
+    if( outputPath.isDirectory() )
       assertEquals( outputPath.toString(), 4, outputPath.list().length );
     }
 
@@ -131,6 +132,7 @@ public class AllLoadsTest extends LoadTestCase
 
     String[] args = new String[]{
       "--platform", getPlatformName(),
+      "-CVMO", "-Xmx512m",
       "-S", output + "status",
       "-I", output + "input",
       "-W", output + "working",
@@ -160,6 +162,7 @@ public class AllLoadsTest extends LoadTestCase
 
     String[] args = new String[]{
       "--platform", getPlatformName(),
+      "-CVMO", "-Xmx512m",
       "-S", output + "status",
       "-I", output + "input",
       "-W", output + "working",
@@ -190,6 +193,7 @@ public class AllLoadsTest extends LoadTestCase
 
     String[] args = new String[]{
       "--platform", getPlatformName(),
+      "-CVMO", "-Xmx512m",
       "-S", output + "status",
       "-I", output + "input",
       "-W", output + "working",
@@ -208,11 +212,27 @@ public class AllLoadsTest extends LoadTestCase
       "-SLS"
     };
 
-    assertTrue( new Main( args ).execute() );
+    Main main = new Main( args );
 
-    String fileName = output +"/status";
-    if ( new File( fileName ).isDirectory() )
-         fileName += "/part-00000";
+    assertTrue( main.execute() );
+
+    String fileName = main.getFullStatsRoot();
+
+    File file = new File( fileName );
+
+    if( file.isDirectory() )
+      {
+      String[] list = file.list( new FilenameFilter()
+      {
+      @Override
+      public boolean accept( File dir, String name )
+        {
+        return name.startsWith( "part-" );
+        }
+      } );
+
+      fileName += "/" + list[ 0 ];
+      }
 
     FileReader fr = new FileReader( fileName );
     LineNumberReader ln = new LineNumberReader( fr );
@@ -220,10 +240,11 @@ public class AllLoadsTest extends LoadTestCase
     while( ln.readLine() != null )
       lineNo = ln.getLineNumber();
     ln.close();
-    if ( getPlatformName().equals( "local" ) )
+
+    if( getPlatformName().equals( "local" ) )
       assertEquals( 10, lineNo );
     else
-      assertEquals( 15, lineNo );
+      assertEquals( 16, lineNo );
     }
 
   @Test
@@ -232,6 +253,7 @@ public class AllLoadsTest extends LoadTestCase
     String output = this.output + "mainadf/";
 
     String[] args = new String[]{
+      "-CVMO", "-Xmx512m",
       "--platform", getPlatformName(),
       "-S", output + "status",
       "-I", output + "input",

@@ -21,6 +21,27 @@ import cascading.stats.FlowStepStats;
  */
 public class StatsPrinter
   {
+  public static void printStats( PrintWriter writer, CascadeStats cascadeStats, boolean singlelineStats )
+    {
+    if( singlelineStats )
+      {
+      writer.printf( "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n",
+        "type",
+        "name",
+        "status",
+        "start-time",
+        "start-time-long",
+        "finished-time",
+        "finished-time-long",
+        "duration",
+        "duration-long",
+        "children"
+      );
+      }
+
+    printCascadeStats( writer, cascadeStats, singlelineStats );
+    }
+
   public static void printCascadeStats( PrintWriter writer, CascadeStats cascadeStats )
     {
     printCascadeStats( writer, cascadeStats, false );
@@ -51,6 +72,7 @@ public class StatsPrinter
       {
       if( !singlelineStats )
         writer.println();
+
       printStepStats( writer, stepStat, flowStat, singlelineStats );
       }
     }
@@ -73,15 +95,24 @@ public class StatsPrinter
   private static void printRecordSummaryFor( PrintWriter writer, String type, CascadingStats cascadingStats, String overrideName )
     {
     int childCount = 0;
+
     if( !cascadingStats.getChildren().isEmpty() )
       childCount = cascadingStats.getChildren().size();
 
-    writer.printf( "%s\t%s\t%s\t%d\t%d\t%d\t%d%n",
+    long duration = cascadingStats.getDuration() / 1000;
+
+    writer.printf( "%s\t%s\t%s\t%tT\t%d\t%tT\t%d\t%s\t%d\t%d%n",
       type,
       overrideName == null ? cascadingStats.getName() : overrideName,
       cascadingStats.getStatus(),
-      cascadingStats.getStartTime(), cascadingStats.getFinishedTime(),
-      cascadingStats.getDuration(), childCount );
+      cascadingStats.getStartTime(),
+      cascadingStats.getStartTime(),
+      cascadingStats.getFinishedTime(),
+      cascadingStats.getFinishedTime(),
+      String.format( "%d:%02d:%02d", duration / 3600, duration % 3600 / 60, duration % 60 ),
+      duration,
+      childCount
+    );
 
     writer.flush();
     }

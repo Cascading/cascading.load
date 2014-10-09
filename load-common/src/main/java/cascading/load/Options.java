@@ -174,6 +174,16 @@ public class Options
       else
         return false;
       }
+
+    @Override
+    public String toString()
+      {
+      final StringBuilder sb = new StringBuilder( "Option{" );
+      sb.append( "optParam=" ).append( optParam );
+      sb.append( ", optNames=" ).append( optNames );
+      sb.append( '}' );
+      return sb.toString();
+      }
     }
 
   //////////////////////////////////////////////////////////////////////
@@ -1095,9 +1105,9 @@ public class Options
     {
     final StringBuilder sb = new StringBuilder();
     sb.append( "Options" );
-    sb.append( "{parser=" ).append( parser );
-    sb.append( ", option_list=" ).append( optionList );
-    sb.append( ", singlelineStats=" ).append( singlelineStats );
+//    sb.append( "{parser=" ).append( parser );
+//    sb.append( ", option_list=" ).append( optionList );
+    sb.append( "{singlelineStats=" ).append( singlelineStats );
     sb.append( ", debugLogging=" ).append( debugLogging );
     sb.append( ", blockSizeMB=" ).append( blockSizeMB );
     sb.append( ", numDefaultMappers=" ).append( numDefaultMappers );
