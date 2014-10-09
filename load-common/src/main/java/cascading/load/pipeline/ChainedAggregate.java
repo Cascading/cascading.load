@@ -41,7 +41,7 @@ public class ChainedAggregate extends Load
 
     Pipe pipe = new Pipe( "chainedaggregate" );
 
-    Function function = new ExpressionFunction( new Fields( "count" ), "line.split( \"\\s\").length", String.class );
+    Function function = new ExpressionFunction( new Fields( "count" ), "line.split( \"\\\\s\").length", String.class );
     pipe = new Each( pipe, new Fields( "line" ), function, Fields.ALL );
 
     int modulo = 1000000;

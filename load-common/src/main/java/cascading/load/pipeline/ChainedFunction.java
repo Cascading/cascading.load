@@ -41,7 +41,7 @@ public class ChainedFunction extends Load
 
     Pipe pipe = new Pipe( "chainedfunction" );
 
-    Function function = new ExpressionFunction( new Fields( "count" ), "line.split( \"\\s\").length", String.class );
+    Function function = new ExpressionFunction( new Fields( "count" ), "line.split( \"\\\\s\").length", String.class );
     pipe = new Each( pipe, new Fields( "line" ), function, Fields.ALL );
 
     for( int i = 0; i < 50; i++ )
