@@ -39,6 +39,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.collect.SpillableProps;
+import cascading.util.Util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.yarn.conf.YarnConfiguration;
@@ -139,7 +140,8 @@ public class Hadoop2TezCascadingPlatform implements CascadingLoadPlatform
       properties.setProperty( TezRuntimeConfiguration.TEZ_RUNTIME_COMPRESS_CODEC, "org.apache.hadoop.io.compress.GzipCodec" );
 
     // -XX:+UseParallelOldGC -XX:ParallelGCThreads=1
-    properties.setProperty( TezConfiguration.TEZ_TASK_LAUNCH_CMD_OPTS, "-server " + options.getChildVMOptions() );
+    if( !Util.isEmpty( options.getChildVMOptions() ) )
+      properties.setProperty( TezConfiguration.TEZ_TASK_LAUNCH_CMD_OPTS, options.getChildVMOptions() );
 
     if( options.getNumDefaultMappers() != -1 )
       LOG.warn( "getNumDefaultMappers not honored" );

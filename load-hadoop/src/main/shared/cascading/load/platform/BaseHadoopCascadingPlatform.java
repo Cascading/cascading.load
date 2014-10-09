@@ -35,6 +35,7 @@ import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.collect.SpillableProps;
+import cascading.util.Util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobConf;
@@ -112,7 +113,8 @@ public abstract class BaseHadoopCascadingPlatform implements CascadingLoadPlatfo
     properties.setProperty( "mapred.compress.map.output", "true" );
 
     // -XX:+UseParallelOldGC -XX:ParallelGCThreads=1
-    properties.setProperty( "mapred.child.java.opts", "-server " + options.getChildVMOptions() );
+    if( !Util.isEmpty( options.getChildVMOptions() ) )
+      properties.setProperty( "mapred.child.java.opts", options.getChildVMOptions() );
 
     if( options.getNumDefaultMappers() != -1 )
       properties.setProperty( "mapred.map.tasks", Integer.toString( options.getNumDefaultMappers() ) );

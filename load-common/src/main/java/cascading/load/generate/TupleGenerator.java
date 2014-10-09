@@ -70,7 +70,7 @@ class TupleGenerator extends BaseOperation implements Function
       {
       super( max );
       int halfMax = this.max / 2;
-      mean = (dataMeanWords == -1 ? halfMax : dataMeanWords * halfMax + halfMax) - 1;
+      mean = ( dataMeanWords == -1 ? halfMax : dataMeanWords * halfMax + halfMax ) - 1;
       stddev = dataStddevWords == -1 ? Options.DEF_DATA_STDDEV * halfMax : dataStddevWords * halfMax;
       this.last = this.max - 1;
       }
@@ -130,7 +130,7 @@ class TupleGenerator extends BaseOperation implements Function
       words.clear();
 
       for( int i = 0; i < numWords; i++ )
-        words.add( dictionary.get( wordIndicies.next() ) );
+        words.add( dictionary.getObject( wordIndicies.next() ) );
 
       String line = words.toString( dataWordDelimiter );
       currentBytes += line.getBytes().length;

@@ -22,7 +22,13 @@ package cascading.load.platform;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
+
+import cascading.util.Util;
 
 /**
  * A simple class to load the Platform from the CLASSPATH by looking for a file called "multitool/platform.properties"
@@ -42,44 +48,67 @@ public class PlatformLoader
    */
   public CascadingLoadPlatform loadPlatform( String platformName )
     {
-    Properties props = new Properties();
+    Set<String> found = new HashSet<String>();
+
+    ClassLoader classLoader = getClass().getClassLoader();
+
+    Enumeration<URL> urls;
 
     try
       {
-      InputStream is = getClass().getClassLoader().getResourceAsStream( PLATFORM_PROPERTIES_FILE_NAME );
-
-      if( is == null )
-        throw new PlatformNotFoundException( String.format( "unable to locate '%s' on the classpath.", PLATFORM_PROPERTIES_FILE_NAME ) );
-
-      props.load( is );
+      urls = classLoader.getResources( PLATFORM_PROPERTIES_FILE_NAME );
       }
     catch( IOException exception )
       {
-      throw new PlatformNotFoundException( exception );
+      throw new RuntimeException( "unable to load resources" );
       }
 
-    String name = props.getProperty( PLATFORM_NAME_PROPERTY );
+    while( urls.hasMoreElements() )
+      {
+      URL url = urls.nextElement();
+      Properties props = new Properties();
 
-    if( !platformName.equals( name ) )
-      throw new PlatformNotFoundException( "Invalid platform. Trying to load " + name + " but found " + platformName );
+      try
+        {
+        InputStream stream = url.openStream();
 
-    String type = props.getProperty( PLATFORM_CLASS_NAME_PROPERTY );
+        if( stream == null )
+          throw new PlatformNotFoundException( String.format( "unable to locate '%s' on the classpath.", PLATFORM_PROPERTIES_FILE_NAME ) );
 
-    try
-      {
-      return (CascadingLoadPlatform) Class.forName( type ).newInstance();
+        props.load( stream );
+        }
+      catch( IOException exception )
+        {
+        throw new PlatformNotFoundException( exception );
+        }
+
+      String name = props.getProperty( PLATFORM_NAME_PROPERTY );
+
+      found.add( name );
+
+      if( !platformName.equals( name ) )
+        continue;
+
+      String type = props.getProperty( PLATFORM_CLASS_NAME_PROPERTY );
+
+      try
+        {
+        return (CascadingLoadPlatform) Class.forName( type ).newInstance();
+        }
+      catch( ClassNotFoundException exception )
+        {
+        throw new PlatformNotFoundException( exception );
+        }
+      catch( InstantiationException exception )
+        {
+        throw new PlatformNotFoundException( exception );
+        }
+      catch( IllegalAccessException exception )
+        {
+        throw new PlatformNotFoundException( exception );
+        }
       }
-    catch( ClassNotFoundException exception )
-      {
-      throw new PlatformNotFoundException( exception );
-      }
-    catch( InstantiationException exception )
-      {
-      throw new PlatformNotFoundException( exception );
-      }
-    catch( IllegalAccessException exception )
-      {
-      throw new PlatformNotFoundException( exception );
-      }
+
+    throw new PlatformNotFoundException( "Invalid platform. Trying to load " + platformName + " but found " + Util.join( found ) );
     }
   }

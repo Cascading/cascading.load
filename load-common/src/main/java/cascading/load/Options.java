@@ -193,7 +193,7 @@ public class Options
   List<String> hadoopProperties = new ArrayList<String>();
   int numMappersPerBlock = 1; // multiplier for num mappers, needs 1.2 wip for this
   int numReducersPerMapper = -1;
-  String childVMOptions = "-Xmx1000m -XX:+UseParallelOldGC";
+  String childVMOptions = ""; //"-Xmx1000m -XX:+UseParallelOldGC";
 
   int maxConcurrentFlows = -1;
   int maxConcurrentSteps = -1;
