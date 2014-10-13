@@ -1048,6 +1048,7 @@ public class Options
       setChainedFunction( true );
       setChainedAggregate( true );
       setPipeline( true );
+      setDataConsume( true );
       }
 
     if( isCertifyTests() )

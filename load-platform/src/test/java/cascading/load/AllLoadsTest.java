@@ -23,18 +23,13 @@ package cascading.load;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FilenameFilter;
-import java.io.InputStream;
 import java.io.LineNumberReader;
-import java.util.Properties;
 
 import cascading.flow.Flow;
-import cascading.load.Main;
-import cascading.load.Options;
 import cascading.load.countsort.CountSort;
 import cascading.load.generate.GenerateData;
 import cascading.load.join.MultiJoin;
 import cascading.load.pipeline.Pipeline;
-import cascading.load.platform.PlatformLoader;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -191,8 +186,10 @@ public class AllLoadsTest extends LoadTestCase
     {
     String output = this.output + "mainsls/";
 
+    String platformName = getPlatformName();
+
     String[] args = new String[]{
-      "--platform", getPlatformName(),
+      "--platform", platformName,
       "-CVMO", "-Xmx512m",
       "-S", output + "status",
       "-I", output + "input",
@@ -241,10 +238,12 @@ public class AllLoadsTest extends LoadTestCase
       lineNo = ln.getLineNumber();
     ln.close();
 
-    if( getPlatformName().equals( "local" ) )
+    if( platformName.equals( "local" ) )
       assertEquals( 10, lineNo );
+    else if( platformName.equals( "hadoop" ) || platformName.equals( "hadoop2-mr1" ) )
+      assertEquals( 33, lineNo );
     else
-      assertEquals( 16, lineNo );
+      assertEquals( 33, lineNo );
     }
 
   @Test
