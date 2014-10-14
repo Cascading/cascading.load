@@ -50,6 +50,6 @@ public class ConsumeData extends Load
   @Override
   public String[] getOutputPaths()
     {
-    return new String[]{options.getInputRoot() + "consumedata"};
+    return new String[]{options.getOutputRoot() + "consumedata"};
     }
   }
