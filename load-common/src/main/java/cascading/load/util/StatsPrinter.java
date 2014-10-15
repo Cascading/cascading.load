@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cascading.flow.SliceCounters;
 import cascading.stats.CascadeStats;
 import cascading.stats.CascadingStats;
 import cascading.stats.FlowNodeStats;
@@ -26,7 +27,7 @@ public class StatsPrinter
     {
     if( singlelineStats )
       {
-      writer.printf( "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n",
+      writer.printf( "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n",
         "platform",
         "type",
         "name",
@@ -37,6 +38,14 @@ public class StatsPrinter
         "finished-time-long",
         "duration",
         "duration-long",
+        "process-duration",
+        "process-duration-long",
+        "read-duration",
+        "read-duration-long",
+        "write-duration",
+        "write-duration-long",
+        "user-duration",
+        "user-duration-long",
         "children"
       );
       }
@@ -114,8 +123,12 @@ public class StatsPrinter
       childCount = cascadingStats.getChildren().size();
 
     long duration = cascadingStats.getDuration() / 1000;
+    long processDuration = cascadingStats.getCounterValue( SliceCounters.Process_Duration ) / 1000;
+    long readDuration = cascadingStats.getCounterValue( SliceCounters.Read_Duration ) / 1000;
+    long writeDuration = cascadingStats.getCounterValue( SliceCounters.Write_Duration ) / 1000;
+    long userDuration = processDuration - readDuration - writeDuration;
 
-    writer.printf( "%s\t%s\t%s\t%s\t%tT\t%d\t%tT\t%d\t%s\t%d\t%d%n",
+    writer.printf( "%s\t%s\t%s\t%s\t%tT\t%d\t%tT\t%d\t%s\t%d\t%s\t%d\t%s\t%d\t%s\t%d\t%s\t%d\t%d%n",
       platformName,
       type,
       overrideName == null ? cascadingStats.getName() : overrideName,
@@ -126,6 +139,14 @@ public class StatsPrinter
       cascadingStats.getFinishedTime(),
       String.format( "%d:%02d:%02d", duration / 3600, duration % 3600 / 60, duration % 60 ),
       duration,
+      String.format( "%d:%02d:%02d", processDuration / 3600, processDuration % 3600 / 60, processDuration % 60 ),
+      processDuration,
+      String.format( "%d:%02d:%02d", readDuration / 3600, readDuration % 3600 / 60, readDuration % 60 ),
+      readDuration,
+      String.format( "%d:%02d:%02d", writeDuration / 3600, writeDuration % 3600 / 60, writeDuration % 60 ),
+      writeDuration,
+      String.format( "%d:%02d:%02d", userDuration / 3600, userDuration % 3600 / 60, userDuration % 60 ),
+      userDuration,
       childCount
     );
 
@@ -143,6 +164,22 @@ public class StatsPrinter
     long duration = cascadingStats.getDuration() / 1000;
 
     writer.printf( "  duration: %d:%02d:%02d%n", duration / 3600, duration % 3600 / 60, duration % 60 );
+
+    long processDuration = cascadingStats.getCounterValue( SliceCounters.Process_Duration ) / 1000;
+
+    writer.printf( "  process duration: %d:%02d:%02d%n", processDuration / 3600, processDuration % 3600 / 60, processDuration % 60 );
+
+    long readDuration = cascadingStats.getCounterValue( SliceCounters.Read_Duration ) / 1000;
+
+    writer.printf( "  read duration: %d:%02d:%02d%n", readDuration / 3600, readDuration % 3600 / 60, readDuration % 60 );
+
+    long writeDuration = cascadingStats.getCounterValue( SliceCounters.Write_Duration ) / 1000;
+
+    writer.printf( "  write duration: %d:%02d:%02d%n", writeDuration / 3600, writeDuration % 3600 / 60, writeDuration % 60 );
+
+    long userDuration = processDuration - readDuration - writeDuration;
+
+    writer.printf( "  user duration: %d:%02d:%02d%n", userDuration / 3600, userDuration % 3600 / 60, userDuration % 60 );
 
     if( !cascadingStats.getChildren().isEmpty() )
       writer.printf( "  num children: %d%n", cascadingStats.getChildren().size() );
