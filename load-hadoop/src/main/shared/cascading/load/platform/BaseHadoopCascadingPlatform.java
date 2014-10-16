@@ -46,7 +46,6 @@ import org.apache.log4j.Logger;
  */
 public abstract class BaseHadoopCascadingPlatform implements CascadingLoadPlatform
   {
-
   private static final Logger LOG = Logger.getLogger( BaseHadoopCascadingPlatform.class );
 
   @Override

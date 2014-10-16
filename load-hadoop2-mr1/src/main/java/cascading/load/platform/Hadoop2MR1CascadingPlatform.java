@@ -25,12 +25,20 @@ import java.util.Map;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.hadoop2.Hadoop2MR1FlowConnector;
+import cascading.stats.CascadingStats;
+import org.apache.hadoop.mapreduce.TaskCounter;
 
 /**
  * Implementation of CascadeLoadPlatform for hadoop2-mr1.
  */
 public class Hadoop2MR1CascadingPlatform extends BaseHadoopCascadingPlatform
   {
+  @Override
+  public String getName()
+    {
+    return "hadoop2-mr1";
+    }
+
   @Override
   public FlowConnector newFlowConnector()
     {
@@ -46,5 +54,11 @@ public class Hadoop2MR1CascadingPlatform extends BaseHadoopCascadingPlatform
   protected String getMRFrameworkName()
     {
     return "yarn";
+    }
+
+  @Override
+  public long getCPUMillis( CascadingStats cascadingStats )
+    {
+    return cascadingStats.getCounterValue( TaskCounter.CPU_MILLISECONDS );
     }
   }

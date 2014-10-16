@@ -13,6 +13,7 @@ import java.util.Properties;
 import cascading.flow.FlowConnector;
 import cascading.load.Options;
 import cascading.scheme.Scheme;
+import cascading.stats.CascadingStats;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
@@ -21,6 +22,8 @@ import cascading.tuple.TupleEntryCollector;
 
 public interface CascadingLoadPlatform
   {
+  public String getName();
+
   public Tap newTap( Scheme scheme, String stringPath );
 
   public Tap newTap( Scheme scheme, String stringPath, SinkMode sinkMode );
@@ -46,4 +49,6 @@ public interface CascadingLoadPlatform
   public int getMaxConcurrentMappers();
 
   public int getMaxConcurrentReducers();
+
+  long getCPUMillis( CascadingStats cascadingStats );
   }

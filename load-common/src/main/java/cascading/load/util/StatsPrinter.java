@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import cascading.flow.SliceCounters;
+import cascading.load.platform.CascadingLoadPlatform;
 import cascading.stats.CascadeStats;
 import cascading.stats.CascadingStats;
 import cascading.stats.FlowNodeStats;
@@ -23,11 +24,18 @@ import cascading.stats.FlowStepStats;
  */
 public class StatsPrinter
   {
-  public static void printStats( String platformName, PrintWriter writer, CascadeStats cascadeStats, boolean singlelineStats )
+  CascadingLoadPlatform platform;
+
+  public StatsPrinter( CascadingLoadPlatform platform )
+    {
+    this.platform = platform;
+    }
+
+  public void printStats( PrintWriter writer, CascadeStats cascadeStats, boolean singlelineStats )
     {
     if( singlelineStats )
       {
-      writer.printf( "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n",
+      writer.printf( "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s%n",
         "platform",
         "type",
         "name",
@@ -46,16 +54,18 @@ public class StatsPrinter
         "write-duration-long",
         "user-duration",
         "user-duration-long",
+        "cpu-duration",
+        "cpu-duration-long",
         "children"
       );
       }
 
-    printCascadeStats( platformName, writer, cascadeStats, singlelineStats );
+    printCascadeStats( writer, cascadeStats, singlelineStats );
     }
 
-  public static void printCascadeStats( String platformName, PrintWriter writer, CascadeStats cascadeStats, boolean singlelineStats )
+  public void printCascadeStats( PrintWriter writer, CascadeStats cascadeStats, boolean singlelineStats )
     {
-    printSummaryFor( platformName, writer, "Cascade", cascadeStats, null, singlelineStats );
+    printSummaryFor( writer, "Cascade", cascadeStats, null, singlelineStats );
 
     Collection<FlowStats> flowStats = cascadeStats.getChildren();
 
@@ -64,13 +74,13 @@ public class StatsPrinter
       if( !singlelineStats )
         writer.println();
 
-      printFlowStats( platformName, writer, flowStat, singlelineStats );
+      printFlowStats( writer, flowStat, singlelineStats );
       }
     }
 
-  public static void printFlowStats( String platformName, PrintWriter writer, FlowStats flowStat, boolean singlelineStats )
+  public void printFlowStats( PrintWriter writer, FlowStats flowStat, boolean singlelineStats )
     {
-    printSummaryFor( platformName, writer, "Flow", flowStat, null, singlelineStats );
+    printSummaryFor( writer, "Flow", flowStat, null, singlelineStats );
 
     Collection<FlowStepStats> stepStats = flowStat.getChildren();
 
@@ -79,15 +89,15 @@ public class StatsPrinter
       if( !singlelineStats )
         writer.println();
 
-      printStepStats( platformName, writer, stepStat, flowStat, singlelineStats );
+      printStepStats( writer, stepStat, flowStat, singlelineStats );
       }
     }
 
-  public static void printStepStats( String platformName, PrintWriter writer, FlowStepStats stepStat, FlowStats flowStat, boolean singlelineStats )
+  public void printStepStats( PrintWriter writer, FlowStepStats stepStat, FlowStats flowStat, boolean singlelineStats )
     {
     String overrideName = flowStat == null ? null : getStepStatsName( stepStat, flowStat.getName(), singlelineStats );
 
-    printSummaryFor( platformName, writer, "Step", stepStat, overrideName, singlelineStats );
+    printSummaryFor( writer, "Step", stepStat, overrideName, singlelineStats );
 
     Collection<FlowNodeStats> nodeStats = stepStat.getChildren();
 
@@ -96,26 +106,26 @@ public class StatsPrinter
       if( !singlelineStats )
         writer.println();
 
-      printNodeStats( platformName, writer, nodeStat, stepStat, singlelineStats );
+      printNodeStats( writer, nodeStat, stepStat, singlelineStats );
       }
     }
 
-  private static void printNodeStats( String platformName, PrintWriter writer, FlowNodeStats nodeStat, FlowStepStats stepStat, boolean singlelineStats )
+  private void printNodeStats( PrintWriter writer, FlowNodeStats nodeStat, FlowStepStats stepStat, boolean singlelineStats )
     {
     String overrideName = nodeStat == null ? null : getStepStatsName( nodeStat, stepStat.getName(), singlelineStats );
 
-    printSummaryFor( platformName, writer, "Node", nodeStat, overrideName, singlelineStats );
+    printSummaryFor( writer, "Node", nodeStat, overrideName, singlelineStats );
     }
 
-  private static void printSummaryFor( String platformName, PrintWriter writer, String type, CascadingStats cascadingStats, String overrideName, boolean singlelineStats )
+  private void printSummaryFor( PrintWriter writer, String type, CascadingStats cascadingStats, String overrideName, boolean singlelineStats )
     {
     if( singlelineStats )
-      printRecordSummaryFor( platformName, writer, type, cascadingStats, overrideName );
+      printRecordSummaryFor( writer, type, cascadingStats, overrideName );
     else
       printDisplaySummaryFor( writer, type, cascadingStats, overrideName );
     }
 
-  private static void printRecordSummaryFor( String platformName, PrintWriter writer, String type, CascadingStats cascadingStats, String overrideName )
+  private void printRecordSummaryFor( PrintWriter writer, String type, CascadingStats cascadingStats, String overrideName )
     {
     int childCount = 0;
 
@@ -127,9 +137,10 @@ public class StatsPrinter
     long readDuration = cascadingStats.getCounterValue( SliceCounters.Read_Duration ) / 1000;
     long writeDuration = cascadingStats.getCounterValue( SliceCounters.Write_Duration ) / 1000;
     long userDuration = processDuration - readDuration - writeDuration;
+    long cpuDuration = platform.getCPUMillis( cascadingStats ) / 1000;
 
-    writer.printf( "%s\t%s\t%s\t%s\t%tT\t%d\t%tT\t%d\t%s\t%d\t%s\t%d\t%s\t%d\t%s\t%d\t%s\t%d\t%d%n",
-      platformName,
+    writer.printf( "%s\t%s\t%s\t%s\t%tT\t%d\t%tT\t%d\t%s\t%d\t%s\t%d\t%s\t%d\t%s\t%d\t%s\t%d\t%s\t%d\t%d%n",
+      platform.getName(),
       type,
       overrideName == null ? cascadingStats.getName() : overrideName,
       cascadingStats.getStatus(),
@@ -147,13 +158,15 @@ public class StatsPrinter
       writeDuration,
       String.format( "%d:%02d:%02d", userDuration / 3600, userDuration % 3600 / 60, userDuration % 60 ),
       userDuration,
+      String.format( "%d:%02d:%02d", cpuDuration / 3600, cpuDuration % 3600 / 60, cpuDuration % 60 ),
+      cpuDuration,
       childCount
     );
 
     writer.flush();
     }
 
-  private static void printDisplaySummaryFor( PrintWriter writer, String type, CascadingStats cascadingStats, String overrideName )
+  private void printDisplaySummaryFor( PrintWriter writer, String type, CascadingStats cascadingStats, String overrideName )
     {
     writer.printf( "%s: %s%n", type, overrideName == null ? cascadingStats.getName() : overrideName );
 

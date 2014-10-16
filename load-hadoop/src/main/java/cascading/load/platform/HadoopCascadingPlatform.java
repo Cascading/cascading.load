@@ -25,12 +25,19 @@ import java.util.Map;
 
 import cascading.flow.FlowConnector;
 import cascading.flow.hadoop.HadoopFlowConnector;
+import cascading.stats.CascadingStats;
 
 /**
  * Implementation of CascadeLoadPlatform for hadoop.
  */
 public class HadoopCascadingPlatform extends BaseHadoopCascadingPlatform
   {
+  @Override
+  public String getName()
+    {
+    return "hadoop";
+    }
+
   @Override
   public FlowConnector newFlowConnector()
     {
@@ -46,5 +53,11 @@ public class HadoopCascadingPlatform extends BaseHadoopCascadingPlatform
   protected String getMRFrameworkName()
     {
     return "classic";
+    }
+
+  @Override
+  public long getCPUMillis( CascadingStats cascadingStats )
+    {
+    return 0;
     }
   }

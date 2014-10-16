@@ -190,7 +190,7 @@ public class Main
 
     writer.println( options );
 
-    StatsPrinter.printStats( options.getPlatformName(), writer, stats, options.isSinglelineStats() );
+    new StatsPrinter( platform ).printStats( writer, stats, options.isSinglelineStats() );
 
     if( options.hasStatsRoot() )
       {

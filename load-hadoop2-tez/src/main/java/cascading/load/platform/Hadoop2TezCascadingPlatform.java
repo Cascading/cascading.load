@@ -32,6 +32,7 @@ import cascading.flow.tez.Hadoop2TezFlowConnector;
 import cascading.flow.tez.Hadoop2TezFlowProcess;
 import cascading.load.Options;
 import cascading.scheme.Scheme;
+import cascading.stats.CascadingStats;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
@@ -42,8 +43,8 @@ import cascading.tuple.collect.SpillableProps;
 import cascading.util.Util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.log4j.Logger;
+import org.apache.tez.common.counters.TaskCounter;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.runtime.library.api.TezRuntimeConfiguration;
 
@@ -53,6 +54,12 @@ import org.apache.tez.runtime.library.api.TezRuntimeConfiguration;
 public class Hadoop2TezCascadingPlatform implements CascadingLoadPlatform
   {
   private static final Logger LOG = Logger.getLogger( Hadoop2TezCascadingPlatform.class );
+
+  @Override
+  public String getName()
+    {
+    return "hadoop2-tez";
+    }
 
   @Override
   public FlowConnector newFlowConnector()
@@ -129,12 +136,13 @@ public class Hadoop2TezCascadingPlatform implements CascadingLoadPlatform
     properties.setProperty( "mapreduce.output.fileoutputformat.compress.codec", "org.apache.hadoop.io.compress.GzipCodec" );
     properties.setProperty( "mapreduce.output.fileoutputformat.compress.type", "BLOCK" );
 
-    properties.setProperty( YarnConfiguration.DEBUG_NM_DELETE_DELAY_SEC, "-1" );
-    properties.setProperty( TezConfiguration.TEZ_GENERATE_DEBUG_ARTIFACTS, "true" );
+//    properties.setProperty( YarnConfiguration.DEBUG_NM_DELETE_DELAY_SEC, "-1" );
+//    properties.setProperty( TezConfiguration.TEZ_GENERATE_DEBUG_ARTIFACTS, "true" );
 
 //    properties.setProperty( TezConfiguration.TEZ_AM_CONTAINER_REUSE_ENABLED, "false" ); // disabled to bypass deadlock
 
     properties.setProperty( TezRuntimeConfiguration.TEZ_RUNTIME_COMPRESS, "true" );
+    properties.setProperty( TezConfiguration.TEZ_HISTORY_LOGGING_SERVICE_CLASS, "org.apache.tez.dag.history.logging.ats.ATSHistoryLoggingService" );
 
     if( HadoopUtil.hasNativeZlib() )
       properties.setProperty( TezRuntimeConfiguration.TEZ_RUNTIME_COMPRESS_CODEC, "org.apache.hadoop.io.compress.GzipCodec" );
@@ -202,5 +210,11 @@ public class Hadoop2TezCascadingPlatform implements CascadingLoadPlatform
   public int getMaxConcurrentReducers()
     {
     return HadoopUtil.getMaxConcurrentReducers();
+    }
+
+  @Override
+  public long getCPUMillis( CascadingStats cascadingStats )
+    {
+    return cascadingStats.getCounterValue( TaskCounter.CPU_MILLISECONDS );
     }
   }
