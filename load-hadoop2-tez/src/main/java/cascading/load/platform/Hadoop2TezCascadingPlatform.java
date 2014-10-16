@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
+import cascading.CascadingException;
 import cascading.flow.FlowConnector;
 import cascading.flow.FlowProps;
 import cascading.flow.FlowRuntimeProps;
@@ -32,6 +33,7 @@ import cascading.flow.tez.Hadoop2TezFlowConnector;
 import cascading.flow.tez.Hadoop2TezFlowProcess;
 import cascading.load.Options;
 import cascading.scheme.Scheme;
+import cascading.scheme.hadoop.TextLine;
 import cascading.stats.CascadingStats;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
@@ -43,6 +45,8 @@ import cascading.tuple.collect.SpillableProps;
 import cascading.util.Util;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.yarn.conf.YarnConfiguration;
 import org.apache.log4j.Logger;
 import org.apache.tez.common.counters.TaskCounter;
 import org.apache.tez.dag.api.TezConfiguration;
@@ -83,6 +87,19 @@ public class Hadoop2TezCascadingPlatform implements CascadingLoadPlatform
   public Tap newTap( Scheme scheme, String stringPath, SinkMode sinkMode )
     {
     return new Hfs( scheme, stringPath, sinkMode );
+    }
+
+  @Override
+  public String[] getChildrenOf( String path )
+    {
+    try
+      {
+      return new Hfs( new TextLine(), path ).getChildIdentifiers( new JobConf() );
+      }
+    catch( IOException exception )
+      {
+      throw new CascadingException( exception );
+      }
     }
 
   @Override
@@ -143,6 +160,7 @@ public class Hadoop2TezCascadingPlatform implements CascadingLoadPlatform
 
     properties.setProperty( TezRuntimeConfiguration.TEZ_RUNTIME_COMPRESS, "true" );
     properties.setProperty( TezConfiguration.TEZ_HISTORY_LOGGING_SERVICE_CLASS, "org.apache.tez.dag.history.logging.ats.ATSHistoryLoggingService" );
+    properties.setProperty( YarnConfiguration.TIMELINE_SERVICE_ENABLED, "true" );
 
     if( HadoopUtil.hasNativeZlib() )
       properties.setProperty( TezRuntimeConfiguration.TEZ_RUNTIME_COMPRESS_CODEC, "org.apache.hadoop.io.compress.GzipCodec" );

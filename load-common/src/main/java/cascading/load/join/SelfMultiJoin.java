@@ -31,12 +31,12 @@ import cascading.tap.Tap;
 import cascading.tuple.Fields;
 
 /**
- * Class MultiJoin uses the test corpus and performs both a split of of all the words into tuples and uniques all the
+ * Class SelfMultiJoin uses the test corpus and performs both a split of of all the words into tuples and uniques all the
  * words, and then finally joins the two streams as inner, outer, left, and right joins.
  */
-public class MultiJoin extends Load
+public class SelfMultiJoin extends Load
   {
-  public MultiJoin( Options options, Properties properties )
+  public SelfMultiJoin( Options options, Properties properties )
     {
     super( options, properties );
     }
@@ -44,9 +44,7 @@ public class MultiJoin extends Load
   @Override
   public Flow createFlow() throws Exception
     {
-    Tap lhsSource = platform.newTap( platform.newTextLine( new Fields( "line" ) ), getInputPaths()[ 0 ] );
-    Tap rhsSource = platform.newTap( platform.newTextLine( new Fields( "line" ) ), getInputPaths()[ 1 ] );
-
+    Tap source = platform.newTap( platform.newTextLine( new Fields( "line" ) ), getInputPaths()[ 0 ] );
     Tap innerSink = platform.newTap( platform.newTextLine(), getOutputPaths()[ 0 ], SinkMode.REPLACE );
     Tap outerSink = platform.newTap( platform.newTextLine(), getOutputPaths()[ 1 ], SinkMode.REPLACE );
     Tap leftSink = platform.newTap( platform.newTextLine(), getOutputPaths()[ 2 ], SinkMode.REPLACE );
@@ -74,28 +72,28 @@ public class MultiJoin extends Load
     Pipe right = new CoGroup( "right", fielded, new Fields( 0 ), uniques, new Fields( "word" ), new RightJoin() );
 
     Pipe[] heads = Pipe.pipes( uniques, fielded );
-    Map<String, Tap> sources = Cascades.tapsMap( heads, Tap.taps( lhsSource, rhsSource ) );
+    Map<String, Tap> sources = Cascades.tapsMap( heads, Tap.taps( source, source ) );
 
     Pipe[] tails = Pipe.pipes( inner, outer, left, right );
     Map<String, Tap> sinks = Cascades.tapsMap( tails, Tap.taps( innerSink, outerSink, leftSink, rightSink ) );
 
-    return platform.newFlowConnector( properties ).connect( "multi-joins", sources, sinks, tails );
+    return platform.newFlowConnector( properties ).connect( "self-multi-joins", sources, sinks, tails );
     }
 
   @Override
   public String[] getInputPaths()
     {
-    return new String[]{options.getInputRoot(), options.getOutputRoot() + "copy"};
+    return new String[]{options.getInputRoot()};
     }
 
   @Override
   public String[] getOutputPaths()
     {
     return new String[]{
-      options.getOutputRoot() + "inner",
-      options.getOutputRoot() + "outer",
-      options.getOutputRoot() + "left",
-      options.getOutputRoot() + "right",
+      options.getOutputRoot() + "self-inner",
+      options.getOutputRoot() + "self-outer",
+      options.getOutputRoot() + "self-left",
+      options.getOutputRoot() + "self-right",
     };
     }
   }

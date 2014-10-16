@@ -24,10 +24,12 @@ package cascading.load.platform;
 import java.io.IOException;
 import java.util.Properties;
 
+import cascading.CascadingException;
 import cascading.flow.FlowProps;
 import cascading.flow.hadoop.HadoopFlowProcess;
 import cascading.load.Options;
 import cascading.scheme.Scheme;
+import cascading.scheme.hadoop.TextLine;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tap.hadoop.Hfs;
@@ -58,6 +60,19 @@ public abstract class BaseHadoopCascadingPlatform implements CascadingLoadPlatfo
   public Tap newTap( Scheme scheme, String stringPath, SinkMode sinkMode )
     {
     return new Hfs( scheme, stringPath, sinkMode );
+    }
+
+  @Override
+  public String[] getChildrenOf( String path )
+    {
+    try
+      {
+      return new Hfs( new TextLine(), path ).getChildIdentifiers( new JobConf() );
+      }
+    catch( IOException exception )
+      {
+      throw new CascadingException( exception );
+      }
     }
 
   @Override

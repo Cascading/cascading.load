@@ -5,12 +5,15 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
+import cascading.CascadingException;
 import cascading.flow.FlowConnector;
 import cascading.flow.local.LocalFlowConnector;
 import cascading.flow.local.LocalFlowProcess;
 import cascading.load.Options;
 import cascading.load.util.Util;
 import cascading.scheme.Scheme;
+import cascading.scheme.local.TextLine;
+import cascading.stats.CascadingStats;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tap.local.FileTap;
@@ -20,6 +23,24 @@ import cascading.tuple.TupleEntryCollector;
 
 public class LocalCascadePlatform implements CascadingLoadPlatform
   {
+  @Override
+  public String getName()
+    {
+    return "local";
+    }
+
+  @Override
+  public String[] getChildrenOf( String path )
+    {
+    try
+      {
+      return new FileTap( new TextLine(), path ).getChildIdentifiers( new Properties() );
+      }
+    catch( IOException exception )
+      {
+      throw new CascadingException( exception );
+      }
+    }
 
   @Override
   public Tap newTap( Scheme scheme, String stringPath )
@@ -42,19 +63,19 @@ public class LocalCascadePlatform implements CascadingLoadPlatform
   @Override
   public Scheme newTextLine()
     {
-    return new cascading.scheme.local.TextLine();
+    return new TextLine();
     }
 
   @Override
   public Scheme newTextLine( Fields sourceFields )
     {
-    return new cascading.scheme.local.TextLine( sourceFields );
+    return new TextLine( sourceFields );
     }
 
   @Override
   public Scheme newTextLine( Fields sourceFields, Fields sinkFields )
     {
-    return new cascading.scheme.local.TextLine( sourceFields, sinkFields );
+    return new TextLine( sourceFields, sinkFields );
     }
 
   @Override
@@ -101,5 +122,11 @@ public class LocalCascadePlatform implements CascadingLoadPlatform
   public int getMaxConcurrentReducers()
     {
     return 1;
+    }
+
+  @Override
+  public long getCPUMillis( CascadingStats cascadingStats )
+    {
+    return 0;
     }
   }

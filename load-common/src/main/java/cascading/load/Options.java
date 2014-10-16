@@ -15,7 +15,6 @@ import java.util.List;
 
 import cascading.load.platform.CascadingLoadPlatform;
 import cascading.load.platform.PlatformLoader;
-import cascading.load.util.Util;
 import cascading.util.Version;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -237,6 +236,7 @@ public class Options
   boolean fullTupleGroup;
 
   boolean multiJoin;
+  boolean selfMultiJoin;
   boolean innerJoin;
   boolean outerJoin;
   boolean leftJoin;
@@ -244,6 +244,7 @@ public class Options
 
   boolean pathologicalInnerJoin;
 
+  boolean copy;
   boolean pipeline;
   boolean chainedAggregate;
   boolean chainedFunction;
@@ -306,12 +307,14 @@ public class Options
     new OptionGlyph( asList( "-ss", "--staggered-sort" ), "setStaggeredSort", null, false, false, "run staggered compare sort load" );
     new OptionGlyph( asList( "-fg", "--full-group" ), "setFullTupleGroup", null, false, false, "run full tuple grouping load" );
     new OptionGlyph( asList( "-m", "--multi-join" ), "setMultiJoin", null, false, false, "run multi join load" );
+    new OptionGlyph( asList( "-sm", "--self-multi-join" ), "setSelfMultiJoin", null, false, false, "run self join multi join load" );
     new OptionGlyph( asList( "-ij", "--inner-join" ), "setInnerJoin", null, false, false, "run inner join load" );
     new OptionGlyph( asList( "-pij", "--pathological-inner-join" ), "setPathologicalInnerJoin", null, false, false, "run pathological inner join load" );
     new OptionGlyph( asList( "-oj", "--outer-join" ), "setOuterJoin", null, false, false, "run outer join load" );
     new OptionGlyph( asList( "-lj", "--left-join" ), "setLeftJoin", null, false, false, "run left join load" );
     new OptionGlyph( asList( "-rj", "--right-join" ), "setRightJoin", null, false, false, "run right join load" );
-    new OptionGlyph( asList( "-p", "--pipeline" ), "setPipeline", null, false, false, "run pipeline load" );
+    new OptionGlyph( asList( "-cp", "--copy" ), "setCopy", null, false, false, "run copy load" );
+    new OptionGlyph( asList( "-p", "--pipeline" ), "setPipeline", null, false, false, "run pipeline (chained function and aggregates) load" );
     new OptionGlyph( asList( "-pm", "--pipeline-hash-modulo" ), "setHashModulo", int.class, false, false, "hash modulo for managing key distribution" );
     new OptionGlyph( asList( "-ca", "--chained-aggregate" ), "setChainedAggregate", null, false, false, "run chained aggregate load" );
     new OptionGlyph( asList( "-cf", "--chained-function" ), "setChainedFunction", null, false, false, "run chained function load" );
@@ -896,6 +899,18 @@ public class Options
   public void setMultiJoin( boolean multiJoin )
     {
     this.multiJoin = multiJoin;
+
+    setCopy( multiJoin ); // required by multijoin
+    }
+
+  public boolean isSelfMultiJoin()
+    {
+    return selfMultiJoin;
+    }
+
+  public void setSelfMultiJoin( boolean selfMultiJoin )
+    {
+    this.selfMultiJoin = selfMultiJoin;
     }
 
   public boolean isInnerJoin()
@@ -959,6 +974,16 @@ public class Options
     }
 
   ////////////////////////////////////////
+
+  public boolean isCopy()
+    {
+    return copy;
+    }
+
+  public void setCopy( boolean copy )
+    {
+    this.copy = copy;
+    }
 
   public boolean isPipeline()
     {
@@ -1037,6 +1062,7 @@ public class Options
     if( isRunAllLoads() )
       {
       setDataGenerate( true );
+      setCopy( true );
       setCountSort( true );
       setFullTupleGroup( true );
       setStaggeredSort( true );
@@ -1045,6 +1071,7 @@ public class Options
       setLeftJoin( true );
       setRightJoin( true );
       setMultiJoin( true );
+      setSelfMultiJoin( true );
       setChainedFunction( true );
       setChainedAggregate( true );
       setPipeline( true );
@@ -1104,63 +1131,63 @@ public class Options
   @Override
   public String toString()
     {
-    final StringBuilder sb = new StringBuilder();
-    sb.append( "Options" );
-//    sb.append( "{parser=" ).append( parser );
-//    sb.append( ", option_list=" ).append( optionList );
-    sb.append( "{singlelineStats=" ).append( singlelineStats );
-    sb.append( ", debugLogging=" ).append( debugLogging );
-    sb.append( ", blockSizeMB=" ).append( blockSizeMB );
-    sb.append( ", numDefaultMappers=" ).append( numDefaultMappers );
-    sb.append( ", numDefaultReducers=" ).append( numDefaultReducers );
-    sb.append( ", percentMaxMappers=" ).append( percentMaxMappers );
-    sb.append( ", percentMaxReducers=" ).append( percentMaxReducers );
-    sb.append( ", mapSpecExec=" ).append( mapSpecExec );
-    sb.append( ", reduceSpecExec=" ).append( reduceSpecExec );
-    sb.append( ", tupleSpillThreshold=" ).append( tupleSpillThreshold );
-    sb.append( ", hadoopProperties=" ).append( hadoopProperties );
-    sb.append( ", numMappersPerBlock=" ).append( numMappersPerBlock );
-    sb.append( ", numReducersPerMapper=" ).append( numReducersPerMapper );
-    sb.append( ", childVMOptions='" ).append( childVMOptions ).append( '\'' );
-    sb.append( ", maxConcurrentFlows=" ).append( maxConcurrentFlows );
-    sb.append( ", maxConcurrentSteps=" ).append( maxConcurrentSteps );
-    sb.append( ", inputRoot='" ).append( inputRoot ).append( '\'' );
-    sb.append( ", outputRoot='" ).append( outputRoot ).append( '\'' );
-    sb.append( ", workingRoot='" ).append( workingRoot ).append( '\'' );
-    sb.append( ", statsRoot='" ).append( statsRoot ).append( '\'' );
-    sb.append( ", cleanWorkFiles=" ).append( cleanWorkFiles );
-    sb.append( ", runAllLoads=" ).append( runAllLoads );
-    sb.append( ", dataGenerate=" ).append( dataGenerate );
-    sb.append( ", dataNumFiles=" ).append( dataNumFiles );
-    sb.append( ", dataFileSizeMB=" ).append( dataFileSizeMB );
-    sb.append( ", dataMaxWords=" ).append( dataMaxWords );
-    sb.append( ", dataMinWords=" ).append( dataMinWords );
-    sb.append( ", dataWordDelimiter='" ).append( dataWordDelimiter ).append( '\'' );
-    sb.append( ", fillBlocksPerFile=" ).append( fillBlocksPerFile );
-    sb.append( ", fillFilesPerAvailMapper=" ).append( fillFilesPerAvailMapper );
-    sb.append( ", dataMeanWords=" ).append( dataMeanWords );
-    sb.append( ", dataStddevWords=" ).append( dataStddevWords );
-    sb.append( ", dataConsume=" ).append( dataConsume );
-    sb.append( ", certifyTests=" ).append( certifyTests );
-    sb.append( ", countSort=" ).append( countSort );
-    sb.append( ", staggeredSort=" ).append( staggeredSort );
-    sb.append( ", fullTupleGroup=" ).append( fullTupleGroup );
-    sb.append( ", multiJoin=" ).append( multiJoin );
-    sb.append( ", innerJoin=" ).append( innerJoin );
-    sb.append( ", outerJoin=" ).append( outerJoin );
-    sb.append( ", leftJoin=" ).append( leftJoin );
-    sb.append( ", rightJoin=" ).append( rightJoin );
-    sb.append( ", pipeline=" ).append( pipeline );
-    sb.append( ", chainedAggregate=" ).append( chainedAggregate );
-    sb.append( ", appName=" ).append( Util.emptyIfNull( appName ) );
-    sb.append( ", tags=" ).append( Util.emptyIfNull( tags ) );
-    sb.append( ", chainedFunction=" ).append( chainedFunction );
-    sb.append( ", hashModulo=" ).append( hashModulo );
-    sb.append( ", writeDotFile=" ).append( writeDotFile );
+    final StringBuilder sb = new StringBuilder( "Options{" );
+    sb.append( "platformName='" ).append( platformName ).append( '\'' );
     sb.append( ", writeTraceFiles=" ).append( writeTraceFiles );
-    sb.append( ", help_option=" ).append( helpOption );
-    sb.append( ", mark_option=" ).append( markOption );
-    sb.append( ", platform=" ).append( platformName );
+    sb.append( ", writeDotFile=" ).append( writeDotFile );
+    sb.append( ", hashModulo=" ).append( hashModulo );
+    sb.append( ", chainedFunction=" ).append( chainedFunction );
+    sb.append( ", chainedAggregate=" ).append( chainedAggregate );
+    sb.append( ", pipeline=" ).append( pipeline );
+    sb.append( ", copy=" ).append( copy );
+    sb.append( ", pathologicalInnerJoin=" ).append( pathologicalInnerJoin );
+    sb.append( ", rightJoin=" ).append( rightJoin );
+    sb.append( ", leftJoin=" ).append( leftJoin );
+    sb.append( ", outerJoin=" ).append( outerJoin );
+    sb.append( ", innerJoin=" ).append( innerJoin );
+    sb.append( ", selfMultiJoin=" ).append( selfMultiJoin );
+    sb.append( ", multiJoin=" ).append( multiJoin );
+    sb.append( ", fullTupleGroup=" ).append( fullTupleGroup );
+    sb.append( ", staggeredSort=" ).append( staggeredSort );
+    sb.append( ", countSort=" ).append( countSort );
+    sb.append( ", dataConsume=" ).append( dataConsume );
+    sb.append( ", dataStddevWords=" ).append( dataStddevWords );
+    sb.append( ", dataMeanWords=" ).append( dataMeanWords );
+    sb.append( ", fillFilesPerAvailMapper=" ).append( fillFilesPerAvailMapper );
+    sb.append( ", fillBlocksPerFile=" ).append( fillBlocksPerFile );
+    sb.append( ", dataWordDelimiter='" ).append( dataWordDelimiter ).append( '\'' );
+    sb.append( ", dataMinWords=" ).append( dataMinWords );
+    sb.append( ", dataMaxWords=" ).append( dataMaxWords );
+    sb.append( ", dataFileSizeMB=" ).append( dataFileSizeMB );
+    sb.append( ", dataNumFiles=" ).append( dataNumFiles );
+    sb.append( ", dataGenerate=" ).append( dataGenerate );
+    sb.append( ", breakingLoads=" ).append( breakingLoads );
+    sb.append( ", comparisonLoads=" ).append( comparisonLoads );
+    sb.append( ", certifyTests=" ).append( certifyTests );
+    sb.append( ", runAllLoads=" ).append( runAllLoads );
+    sb.append( ", cleanWorkFiles=" ).append( cleanWorkFiles );
+    sb.append( ", statsRoot='" ).append( statsRoot ).append( '\'' );
+    sb.append( ", workingRoot='" ).append( workingRoot ).append( '\'' );
+    sb.append( ", outputRoot='" ).append( outputRoot ).append( '\'' );
+    sb.append( ", inputRoot='" ).append( inputRoot ).append( '\'' );
+    sb.append( ", maxConcurrentSteps=" ).append( maxConcurrentSteps );
+    sb.append( ", maxConcurrentFlows=" ).append( maxConcurrentFlows );
+    sb.append( ", childVMOptions='" ).append( childVMOptions ).append( '\'' );
+    sb.append( ", numReducersPerMapper=" ).append( numReducersPerMapper );
+    sb.append( ", numMappersPerBlock=" ).append( numMappersPerBlock );
+    sb.append( ", hadoopProperties=" ).append( hadoopProperties );
+    sb.append( ", tupleSpillThreshold=" ).append( tupleSpillThreshold );
+    sb.append( ", reduceSpecExec=" ).append( reduceSpecExec );
+    sb.append( ", mapSpecExec=" ).append( mapSpecExec );
+    sb.append( ", percentMaxReducers=" ).append( percentMaxReducers );
+    sb.append( ", percentMaxMappers=" ).append( percentMaxMappers );
+    sb.append( ", numDefaultReducers=" ).append( numDefaultReducers );
+    sb.append( ", numDefaultMappers=" ).append( numDefaultMappers );
+    sb.append( ", blockSizeMB=" ).append( blockSizeMB );
+    sb.append( ", debugLogging=" ).append( debugLogging );
+    sb.append( ", singlelineStats=" ).append( singlelineStats );
+    sb.append( ", tags='" ).append( tags ).append( '\'' );
+    sb.append( ", appName='" ).append( appName ).append( '\'' );
     sb.append( '}' );
     return sb.toString();
     }

@@ -24,6 +24,8 @@ public interface CascadingLoadPlatform
   {
   public String getName();
 
+  String[] getChildrenOf( String path );
+
   public Tap newTap( Scheme scheme, String stringPath );
 
   public Tap newTap( Scheme scheme, String stringPath, SinkMode sinkMode );

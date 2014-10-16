@@ -29,10 +29,12 @@ import cascading.load.join.OnlyInnerJoin;
 import cascading.load.join.OnlyLeftJoin;
 import cascading.load.join.OnlyOuterJoin;
 import cascading.load.join.OnlyRightJoin;
+import cascading.load.join.SelfMultiJoin;
 import cascading.load.pathological.BreakingLoad;
 import cascading.load.pathological.PathologicalOnlyInnerJoin;
 import cascading.load.pipeline.ChainedAggregate;
 import cascading.load.pipeline.ChainedFunction;
+import cascading.load.pipeline.Copy;
 import cascading.load.pipeline.Pipeline;
 import cascading.load.platform.CascadingLoadPlatform;
 import cascading.load.platform.PlatformLoader;
@@ -88,8 +90,14 @@ public class Main
     if( options.isCountSort() )
       flows.add( new CountSort( options, getDefaultProperties() ).createFlow() );
 
-    if( options.isMultiJoin() )
+    if( options.isMultiJoin() ) // requires Copy load
       flows.add( new MultiJoin( options, getDefaultProperties() ).createFlow() );
+
+    if( options.isSelfMultiJoin() )
+      flows.add( new SelfMultiJoin( options, getDefaultProperties() ).createFlow() );
+
+    if( options.isCopy() )
+      flows.add( new Copy( options, getDefaultProperties() ).createFlow() );
 
     if( options.isPipeline() )
       flows.add( new Pipeline( options, getDefaultProperties() ).createFlow() );
