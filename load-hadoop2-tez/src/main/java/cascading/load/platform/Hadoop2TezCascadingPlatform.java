@@ -158,6 +158,9 @@ public class Hadoop2TezCascadingPlatform implements CascadingLoadPlatform
 
 //    properties.setProperty( TezConfiguration.TEZ_AM_CONTAINER_REUSE_ENABLED, "false" ); // disabled to bypass deadlock
 
+    // unsupported currently
+//    properties.setProperty( TezConfiguration.TEZ_AM_SESSION_MODE, "true" ); // enable sessions
+
     properties.setProperty( TezRuntimeConfiguration.TEZ_RUNTIME_COMPRESS, "true" );
     properties.setProperty( TezConfiguration.TEZ_HISTORY_LOGGING_SERVICE_CLASS, "org.apache.tez.dag.history.logging.ats.ATSHistoryLoggingService" );
     properties.setProperty( YarnConfiguration.TIMELINE_SERVICE_ENABLED, "true" );
