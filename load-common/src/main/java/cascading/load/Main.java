@@ -30,12 +30,14 @@ import cascading.load.join.OnlyLeftJoin;
 import cascading.load.join.OnlyOuterJoin;
 import cascading.load.join.OnlyRightJoin;
 import cascading.load.join.SelfMultiJoin;
+import cascading.load.join.ThreeWayInnerJoin;
 import cascading.load.pathological.BreakingLoad;
 import cascading.load.pathological.PathologicalOnlyInnerJoin;
 import cascading.load.pipeline.ChainedAggregate;
 import cascading.load.pipeline.ChainedFunction;
 import cascading.load.pipeline.Copy;
 import cascading.load.pipeline.Pipeline;
+import cascading.load.pipeline.Split;
 import cascading.load.platform.CascadingLoadPlatform;
 import cascading.load.platform.PlatformLoader;
 import cascading.load.util.StatsPrinter;
@@ -99,6 +101,9 @@ public class Main
     if( options.isCopy() )
       flows.add( new Copy( options, getDefaultProperties() ).createFlow() );
 
+    if( options.isSplit() )
+      flows.add( new Split( options, getDefaultProperties() ).createFlow() );
+
     if( options.isPipeline() )
       flows.add( new Pipeline( options, getDefaultProperties() ).createFlow() );
 
@@ -125,6 +130,9 @@ public class Main
 
     if( options.isOuterJoin() )
       flows.add( new OnlyOuterJoin( options, getDefaultProperties() ).createFlow() );
+
+    if( options.isThreeWayJoin() )
+      flows.add( new ThreeWayInnerJoin( options, getDefaultProperties() ).createFlow() );
 
     if( options.isPathologicalInnerJoin() )
       flows.add( new PathologicalOnlyInnerJoin( options, getDefaultProperties() ).createFlow() );
