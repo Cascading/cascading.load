@@ -52,7 +52,7 @@ repositories {
   maven{ url 'http://conjars.org/repo/' }
 }
 
-ext.cascadingVersion = '2.6.0'
+ext.cascadingVersion = '2.7.0-wip-+'
 ext.hadoopVersion = '1.2.1'
 ext.hadoop2Version = '2.4.1'
 ext.cascadingChanging = cascadingVersion.endsWith( ' -dev' );
