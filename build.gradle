@@ -72,7 +72,7 @@ subprojects {
   repositories{
     mavenLocal()
     mavenCentral()
-    mavenRepo name: 'conjars', url: 'http://conjars.org/repo/'
+    maven{ url 'http://conjars.org/repo/' }
   }
 
   configurations {
