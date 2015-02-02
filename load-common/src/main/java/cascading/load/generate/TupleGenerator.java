@@ -130,7 +130,7 @@ class TupleGenerator extends BaseOperation implements Function
       words.clear();
 
       for( int i = 0; i < numWords; i++ )
-        words.add( dictionary.get( wordIndicies.next() ) );
+        words.add( dictionary.getObject( wordIndicies.next() ) );
 
       String line = words.toString( dataWordDelimiter );
       currentBytes += line.getBytes().length;
