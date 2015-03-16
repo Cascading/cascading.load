@@ -41,6 +41,7 @@ dependencies {
   provided group: 'org.apache.hadoop', name: 'hadoop-hdfs', version: hadoop2Version
   provided group: 'org.apache.tez', name: 'tez-api', version: tezVersion
   provided group: 'org.apache.tez', name: 'tez-dag', version: tezVersion
+  provided group: 'org.apache.tez', name: 'tez-yarn-timeline-history-with-acls', version: tezVersion 
   provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
 
 
@@ -50,6 +51,7 @@ dependencies {
   testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-hadoop2-tez', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-platform', version: cascadingVersion, classifier: 'tests', changing: true
+  testCompile group: 'org.apache.tez', name: 'tez-tests', version: tezVersion, classifier: 'tests'
 }
 
 fatJar {
@@ -69,4 +71,15 @@ artifacts {
 test {
   setTestClassesDir( file( "${projectDir}/../load-platform/src/test/java/" ) )
   sourceSets.test.output.classesDir = file( "${projectDir}/../load-platform/build/classes/test" )
+}
+
+configurations.all {
+  resolutionStrategy {
+    force 'com.google.guava:guava:11.0.2'
+
+    eachDependency { def details ->
+      if( details.requested.group == 'org.apache.hadoop' )
+        details.useVersion hadoop2Version
+    }
+  }
 }

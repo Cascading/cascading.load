@@ -177,6 +177,8 @@ public class Hadoop2TezCascadingPlatform implements CascadingLoadPlatform
 
     if( options.getNumDefaultReducers() != -1 )
       properties.setProperty( FlowRuntimeProps.GATHER_PARTITIONS, Integer.toString( options.getNumDefaultReducers() ) );
+    else
+      properties.setProperty( FlowRuntimeProps.GATHER_PARTITIONS, "1" );
 
 //    properties.setProperty( "mapred.map.tasks.speculative.execution", options.isMapSpecExec() ? "true" : "false" );
 //    properties.setProperty( "mapred.reduce.tasks.speculative.execution", options.isReduceSpecExec() ? "true" : "false" );

@@ -40,7 +40,7 @@ dependencies {
   compile( group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.3' )
   compile( group: 'log4j', name: 'log4j', version: '1.2.16' )
 
-  provided group: 'org.slf4j', name: 'slf4j-api', version: '1.6.1'
+  provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
 
   testCompile project( path: ':load-platform', configuration: 'testArtifacts' )
   testCompile group: 'cascading', name: 'cascading-core', version: cascadingVersion, classifier: 'tests', changing: true

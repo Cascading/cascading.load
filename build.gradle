@@ -35,7 +35,7 @@ buildscript {
     maven { url 'http://repo.springsource.org/plugins-release' }
   }
   dependencies {
-    classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.4'
+    classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.5'
     classpath 'eu.appsatori:gradle-fatjar-plugin:0.3'
   }
 }
@@ -55,10 +55,10 @@ repositories {
   maven { url 'http://conjars.org/repo/' }
 }
 
-ext.cascadingVersion = '3.0.0-wip-56'
+ext.cascadingVersion = '3.0.0-wip-+'
 ext.hadoopVersion = '1.2.1'
-ext.hadoop2Version = '2.4.1'
-ext.tezVersion = '0.5.1'
+ext.hadoop2Version = '2.6.0'
+ext.tezVersion = '0.6.0'
 ext.cascadingChanging = cascadingVersion.endsWith( ' -dev' );
 ext.buildDate = new SimpleDateFormat( "yyyyMMdd" ).format( new Date() )
 ext.buildTimestamp = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" ).format( new Date() )
@@ -81,7 +81,7 @@ subprojects {
   repositories {
     mavenLocal()
     mavenCentral()
-    mavenRepo name: 'conjars', url: 'http://conjars.org/repo/'
+    maven{ url 'http://conjars.org/repo/' }
   }
 
   configurations {
@@ -91,7 +91,7 @@ subprojects {
   }
 
   dependencies {
-    testCompile group: 'junit', name: 'junit', version: "4.11"
+    testCompile group: 'junit', name: 'junit', version: "4.12"
   }
   test {
     exclude '**/*TestCase*'

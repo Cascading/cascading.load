@@ -22,8 +22,8 @@ rootProject.ext.testRoots = []
 
 project.setTestingProperties = {
 
-  if( !System.properties[ 'test.cluster.enabled' ] )
-    System.properties[ 'test.cluster.enabled' ] = 'false'
+if( !System.properties[ 'test.cluster.enabled' ] )
+  System.properties[ 'test.cluster.enabled' ] = 'false'
 
   // hadoop hard codes 'build/test' into its test harness, so might as well play along
   System.properties[ 'test.data.path' ] = new String( "${projectDir}/../load-platform/src/test/resources/data/" )
@@ -44,6 +44,8 @@ test {
 task platformTest( type: Test, dependsOn: test ) {
 
   forkEvery = 1 // static fields on the platform test get munged otherwise
+  jvmArgs '-Xmx2g'
+  //jvmArgs "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005"
 
   if( System.properties[ 'platformTest.single' ] ) // test a single class from the command line
     include "**/${System.properties[ 'platformTest.single' ]}.class"

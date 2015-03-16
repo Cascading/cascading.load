@@ -38,18 +38,19 @@ import org.junit.Test;
  */
 public class AllLoadsTest extends LoadTestCase
   {
-  String output = "";
+  String output;
 
   @Before
-  public void setUp()
+  public void setUp() throws Exception
     {
-    output = getRootPath() + "/build/test/output/load/";
+    super.setUp();
+    output = getOutputPath() + "/"; //+ "/build/test/output/load/";
     }
 
   @Test
   public void testAllLoads() throws Exception
     {
-    String output = this.output + "api/";
+    String output = this.output;
 
     Options options = new Options();
 
@@ -76,7 +77,7 @@ public class AllLoadsTest extends LoadTestCase
 
     File outputPath = new File( generate.getOutputPaths()[ 0 ] );
     assertTrue( outputPath.exists() );
-    if( outputPath.isDirectory() )
+    if( outputPath.isDirectory() && ( getPlatformName().equals( "hadoop" ) || getPlatformName().equals( "hadoop2-mr1" )) )
       assertEquals( outputPath.toString(), 8, outputPath.list().length ); // includes _SUCCESS and its crc
 
     options.setCountSort( true );
@@ -133,6 +134,8 @@ public class AllLoadsTest extends LoadTestCase
       "-W", output + "working",
       "-O", output + "output",
 
+      "-DH", "yarn.timeline-service.enabled=false",
+
       "-g",
       "-gf", "3",
       "-gs", "1",
@@ -147,7 +150,7 @@ public class AllLoadsTest extends LoadTestCase
 
     assertTrue( new Main( args ).execute() );
 
-    assertEquals( 6, new File( output + "output" ).list().length );
+    assertEquals( 7, new File( output + "output" ).list().length );
     }
 
   @Test
@@ -157,11 +160,13 @@ public class AllLoadsTest extends LoadTestCase
 
     String[] args = new String[]{
       "--platform", getPlatformName(),
-      "-CVMO", "-Xmx512m",
+      "-CVMO", "-Xmx1g",
       "-S", output + "status",
       "-I", output + "input",
       "-W", output + "working",
       "-O", output + "output",
+
+      "-DH", "yarn.timeline-service.enabled=false",
 
       "-g",
       "-gf", "1",
@@ -190,11 +195,13 @@ public class AllLoadsTest extends LoadTestCase
 
     String[] args = new String[]{
       "--platform", platformName,
-      "-CVMO", "-Xmx512m",
+      "-CVMO", "-Xmx1g",
       "-S", output + "status",
       "-I", output + "input",
       "-W", output + "working",
       "-O", output + "output",
+
+      "-DH", "yarn.timeline-service.enabled=false",
 
       "-g",
       "-gf", "1",
@@ -239,45 +246,12 @@ public class AllLoadsTest extends LoadTestCase
     ln.close();
 
     if( platformName.equals( "local" ) )
-      assertEquals( 10, lineNo );
-    else if( platformName.equals( "hadoop" ) || platformName.equals( "hadoop2-mr1" ) )
-      assertEquals( 33, lineNo );
-    else
-      assertEquals( 33, lineNo );
+      assertEquals( 13, lineNo );
+    else if( platformName.equals( "hadoop2-tez" ) )
+      assertEquals( 26, lineNo );
+    else if( platformName.equals( "hadoop2-mr1" ) || platformName.equals( "hadoop" ) )
+      assertEquals( 36, lineNo );
     }
 
-  @Test
-  public void testAllDiscreteFlows() throws Exception
-    {
-    String output = this.output + "mainadf/";
 
-    String[] args = new String[]{
-      "-CVMO", "-Xmx512m",
-      "--platform", getPlatformName(),
-      "-S", output + "status",
-      "-I", output + "input",
-      "-W", output + "working",
-      "-O", output + "output",
-
-      "-MXCF", "0",                 // Serial execution
-
-      "-g",
-      "-gf", "1",
-      "-gs", "1",
-
-      "-ss", "-fg",                 // Every discrete flow
-      "-ij", "-oj", "-lj", "-rj",
-      "-cf", "-ca",
-
-      //TODO own test
-      "-gwm", "0",                  // Normal distribution
-      "-gws", "0.2",
-
-      "-SLS"
-    };
-
-    assertTrue( new Main( args ).execute() );
-
-    assertEquals( 8, new File( output + "output" ).list().length );
-    }
   }

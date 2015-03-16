@@ -85,7 +85,7 @@ public class MultiJoin extends Load
   @Override
   public String[] getInputPaths()
     {
-    return new String[]{options.getInputRoot(), options.getOutputRoot() + "copy"};
+    return new String[]{options.getInputRoot(), options.getInputRoot()};
     }
 
   @Override

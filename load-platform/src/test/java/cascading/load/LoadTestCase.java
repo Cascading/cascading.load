@@ -23,6 +23,7 @@ package cascading.load;
 import java.util.Properties;
 
 import cascading.PlatformTestCase;
+import cascading.flow.FlowProps;
 
 /**
  *
@@ -39,6 +40,11 @@ public class LoadTestCase extends PlatformTestCase
     Properties properties = new Properties();
 
     properties.putAll( super.getProperties() );
+
+    properties.put( "yarn.timeline-service.enabled", "false" );
+    properties.put( FlowProps.MAX_CONCURRENT_STEPS, "1" );
+
+    properties.putAll( getPlatform().getProperties() );
 
     return properties;
     }
