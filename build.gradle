@@ -18,10 +18,12 @@
  * limitations under the License.
  */
 
-
 import org.apache.tools.ant.filters.ReplaceTokens
 
 import java.text.SimpleDateFormat
+
+apply plugin: 'idea'
+apply plugin: 'eclipse'
 
 apply from: 'etc/version.gradle'
 apply from: 'etc/properties.gradle'
@@ -32,21 +34,11 @@ buildscript {
     mavenLocal()
     mavenCentral()
     jcenter()
-    maven { url 'http://repo.springsource.org/plugins-release' }
   }
   dependencies {
-    classpath 'org.springframework.build.gradle:propdeps-plugin:0.0.5'
-    classpath 'eu.appsatori:gradle-fatjar-plugin:0.3'
+    classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:2.2.1'
+    classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.1'
   }
-}
-
-// gives 'provided' scope for hadoop
-configure( allprojects ) {
-  apply plugin: 'propdeps'
-  apply plugin: 'propdeps-maven'
-  apply plugin: 'propdeps-idea'
-  apply plugin: 'propdeps-eclipse'
-  apply plugin: 'eu.appsatori.fatjar'
 }
 
 repositories {
@@ -56,27 +48,30 @@ repositories {
 }
 
 ext.cascadingVersion = '3.0.0-wip-+'
+
 ext.hadoopVersion = '1.2.1'
 ext.hadoop2Version = '2.6.0'
 ext.tezVersion = '0.6.0'
-ext.cascadingChanging = cascadingVersion.endsWith( ' -dev' );
+
+ext.cascadingChanging = cascadingVersion.endsWith( '-dev' );
 ext.buildDate = new SimpleDateFormat( "yyyyMMdd" ).format( new Date() )
 ext.buildTimestamp = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss" ).format( new Date() )
-ext.tarBaseName = "${rootProject.name}-${buildDate}"
+ext.jarName = "${project.name}-${buildDate}.jar"
+ext.tarBaseName = "${project.name}-${buildDate}"
 ext.finalTarName = "${tarBaseName}.tgz"
 
-allprojects {
-  sourceCompatibility = 1.7
-  targetCompatibility = 1.7
-}
-
 subprojects {
-  ext.jarName = "${project.name}-${buildDate}.jar"
   apply plugin: 'java'
   apply plugin: 'maven'
   apply plugin: 'idea'
   apply plugin: 'eclipse'
+  apply plugin: 'provided-base'
+  apply plugin: 'com.github.johnrengelman.shadow'
+
   apply from: "${rootDir}/etc/testing.gradle"
+
+  sourceCompatibility = 1.7
+  targetCompatibility = 1.7
 
   repositories {
     mavenLocal()
@@ -93,6 +88,7 @@ subprojects {
   dependencies {
     testCompile group: 'junit', name: 'junit', version: "4.12"
   }
+
   test {
     exclude '**/*TestCase*'
   }
@@ -107,7 +103,30 @@ subprojects {
     classifier = 'test-sources'
   }
 
+  shadowJar {
+    baseName = "${project.name}-${buildDate}"
+    classifier = ""
+    configurations = []
+    
+    from {
+      project.configurations.runtime.minus( [ project.configurations.provided ] )   
+    }
+
+    mergeServiceFiles()
+
+    exclude 'LICENSE'
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+    exclude 'META-INF/LICENSE*'
+
+    manifest {
+      attributes "Main-Class": "cascading/load/Main",
+              'Build-Time': "${buildTimestamp}"
+    }
+  }
+
   artifacts {
+    archives shadowJar
     testArtifacts testsJar
     testArtifacts testSourcesJar
   }
@@ -130,22 +149,26 @@ allprojects {
   }
 }
 
-task distCopy( type: Copy, dependsOn: jar ) {
+task clean( type: Delete ) {
+  delete "build"
+}
 
-  into "${buildDir}/dist/${archivesBaseName}-${buildDate}"
+task distCopy( type: Copy, dependsOn: subprojects.jar ) {
+
+  into "${buildDir}/dist/load-${buildDate}"
 
   from 'README.md'
   from 'apl.txt'
   from( 'src/main/shell' ) { into 'bin' }
 
-  from( project( ":load-hadoop" ).fatJar ) { into 'platform/hadoop/' }
-  from( project( ":load-hadoop2-mr1" ).fatJar ) { into 'platform/hadoop2-mr1/' }
-  from( project( ":load-hadoop2-tez" ).fatJar ) { into 'platform/hadoop2-tez/' }
-  from( project( ":load-local" ).fatJar ) { into 'platform/local/' }
+  from( project( ":load-hadoop" ).shadowJar ) { into 'platform/hadoop/' }
+  from( project( ":load-hadoop2-mr1" ).shadowJar ) { into 'platform/hadoop2-mr1/' }
+  from( project( ":load-hadoop2-tez" ).shadowJar ) { into 'platform/hadoop2-tez/' }
+  from( project( ":load-local" ).shadowJar ) { into 'platform/local/' }
   from( "load-docs/build/asciidoc" ) { into 'docs' }
 }
 
-distCopy.dependsOn( [":load-docs:asciidoctor", ":load-hadoop:fatJar", ":load-hadoop2-mr1:fatJar", ":load-hadoop2-tez:fatJar", "load-local:fatJar"] )
+distCopy.dependsOn( [":load-docs:asciidoctor", subprojects.shadowJar] )
 
 task buildTarball( type: Tar, dependsOn: distCopy ) {
   baseName = "${tarBaseName}"
@@ -156,22 +179,20 @@ task buildTarball( type: Tar, dependsOn: distCopy ) {
 
 task packageDist( dependsOn: buildTarball ) << {
   file( "${s3UploadArtifacts.source}/latest.txt" ).write( "http://${s3UploadArtifacts.destination}${finalTarName}" )
-  //file( "${s3UploadArtifacts.source}/latest-sha1.txt" ).write( "http://${s3UploadArtifacts.destination}${finalTarName}.sha1" )
-  //file( "${s3UploadArtifacts.source}/latest-md5.txt" ).write( "http://${s3UploadArtifacts.destination}${finalTarName}.md5" )
   file( "${s3UploadArtifacts.source}/latest-hadoop-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-hadoop' ).jarName}" )
   file( "${s3UploadArtifacts.source}/latest-hadoop2-mr1-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-hadoop2-mr1' ).jarName}" )
   file( "${s3UploadArtifacts.source}/latest-hadoop2-tez-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-hadoop2-tez' ).jarName}" )
 
   copy {
-    from( project( ":load-hadoop" ).fatJar )
+    from( project( ":load-hadoop" ).shadowJar )
     into( "${s3UploadArtifacts.source}" )
   }
   copy {
-    from( project( ":load-hadoop2-mr1" ).fatJar )
+    from( project( ":load-hadoop2-mr1" ).shadowJar )
     into( "${s3UploadArtifacts.source}" )
   }
   copy {
-    from( project( ":load-hadoop2-tez" ).fatJar )
+    from( project( ":load-hadoop2-tez" ).shadowJar )
     into( "${s3UploadArtifacts.source}" )
   }
   copy {

@@ -18,17 +18,6 @@
  * limitations under the License.
  */
 
-buildscript {
-  repositories {
-    mavenCentral()
-  }
-
-  dependencies {
-    classpath 'eu.appsatori:gradle-fatjar-plugin:0.2'
-  }
-}
-
-apply plugin: 'fatjar'
 apply from: "${rootDir}/etc/hadoop-shared-config.gradle"
 
 dependencies {
@@ -57,21 +46,6 @@ dependencies {
   testCompile( group: 'org.apache.hadoop', name: 'hadoop-test', version: hadoopVersion ) {
     exclude group: 'oro' // causes transient build maven failures, ftw
   }
-}
-
-fatJar {
-  archiveName = jarName
-  exclude 'META-INF/*.DSA'
-  exclude 'META-INF/LICENSE*'
-
-  manifest {
-    attributes "Main-Class": "cascading/load/Main",
-            'Build-Time': "${buildTimestamp}"
-  }
-}
-
-artifacts {
-  archives fatJar
 }
 
 test {

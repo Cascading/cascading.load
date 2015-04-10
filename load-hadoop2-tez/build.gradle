@@ -18,18 +18,6 @@
  * limitations under the License.
  */
 
-buildscript {
-  repositories {
-    mavenCentral()
-  }
-
-  dependencies {
-    classpath 'eu.appsatori:gradle-fatjar-plugin:0.2'
-  }
-}
-
-apply plugin: 'fatjar'
-
 dependencies {
 
   compile project( ':load-common' )
@@ -52,20 +40,6 @@ dependencies {
   testCompile group: 'cascading', name: 'cascading-hadoop2-tez', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'cascading', name: 'cascading-platform', version: cascadingVersion, classifier: 'tests', changing: true
   testCompile group: 'org.apache.tez', name: 'tez-tests', version: tezVersion, classifier: 'tests'
-}
-
-fatJar {
-  archiveName = jarName
-  exclude 'META-INF/*.DSA'
-  exclude 'META-INF/LICENSE*'
-  manifest {
-    attributes "Main-Class": "cascading/load/Main",
-            'Build-Time': "${buildTimestamp}"
-  }
-}
-
-artifacts {
-  archives fatJar
 }
 
 test {
