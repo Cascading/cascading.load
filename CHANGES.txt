@@ -1,0 +1,5 @@
+Load change log
+
+2.7.0
+
+- update to Cascading 2.7.0
