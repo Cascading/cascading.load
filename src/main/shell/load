@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Copyright 2011-2014 Concurrent, Inc.
+# Copyright 2011-2015 Concurrent, Inc.
 
 function show_usage {
   echo "Type load -h for the full help or load --selfupdate if you want to install the latest version."

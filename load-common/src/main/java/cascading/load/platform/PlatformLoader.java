@@ -31,7 +31,7 @@ import java.util.Set;
 import cascading.util.Util;
 
 /**
- * A simple class to load the Platform from the CLASSPATH by looking for a file called "multitool/platform.properties"
+ * A simple class to load the Platform from the CLASSPATH by looking for a file called "cascading/load/platform.properties"
  * and loading the class defined in there. A platform is required to have a no-arg Constructor to be properly loaded.
  */
 public class PlatformLoader
