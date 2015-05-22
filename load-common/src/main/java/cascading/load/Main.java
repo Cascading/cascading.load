@@ -165,8 +165,10 @@ public class Main
 
       return false;
       }
-
-    printSummary( stats );
+    finally
+      {
+      printSummary( stats ); // print summary regardless
+      }
 
     if( options.isCleanWorkFiles() )
       cleanWorkFiles();
