@@ -107,9 +107,9 @@ subprojects {
     baseName = "${project.name}-${buildDate}"
     classifier = ""
     configurations = []
-    
+
     from {
-      project.configurations.runtime.minus( [ project.configurations.provided ] )   
+      project.configurations.runtime.minus( [ project.configurations.provided ] )
     }
 
     mergeServiceFiles()
@@ -179,9 +179,10 @@ task buildTarball( type: Tar, dependsOn: distCopy ) {
 
 task packageDist( dependsOn: buildTarball ) << {
   file( "${s3UploadArtifacts.source}/latest.txt" ).write( "http://${s3UploadArtifacts.destination}${finalTarName}" )
-  file( "${s3UploadArtifacts.source}/latest-hadoop-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-hadoop' ).jarName}" )
-  file( "${s3UploadArtifacts.source}/latest-hadoop2-mr1-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-hadoop2-mr1' ).jarName}" )
-  file( "${s3UploadArtifacts.source}/latest-hadoop2-tez-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-hadoop2-tez' ).jarName}" )
+  file( "${s3UploadArtifacts.source}/latest-local-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-local' ).shadowJar.archiveName}" )
+  file( "${s3UploadArtifacts.source}/latest-hadoop-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-hadoop' ).shadowJar.archiveName}" )
+  file( "${s3UploadArtifacts.source}/latest-hadoop2-mr1-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-hadoop2-mr1' ).shadowJar.archiveName}" )
+  file( "${s3UploadArtifacts.source}/latest-hadoop2-tez-jar.txt" ).write( "http://${s3UploadArtifacts.destination}${project( 'load-hadoop2-tez' ).shadowJar.archiveName}" )
 
   copy {
     from( project( ":load-hadoop" ).shadowJar )
