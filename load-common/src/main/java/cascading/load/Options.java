@@ -355,7 +355,7 @@ public class Options
       if( !( this.runAllLoads || this.dataGenerate || this.dataConsume || this.countSort || this.certifyTests ||
         this.staggeredSort || this.fullTupleGroup || this.multiJoin || this.innerJoin || this.outerJoin ||
         this.leftJoin || this.rightJoin || this.pipeline || this.chainedAggregate || this.chainedFunction ||
-        this.pathologicalInnerJoin || this.breakingLoads ) )
+        this.pathologicalInnerJoin || this.breakingLoads || this.comparisonLoads ) )
         {
         throw new Exception( "At least one flow must be selected, to run Load" );
         }
@@ -1115,7 +1115,12 @@ public class Options
     if( isComparisonLoads() )
       {
       setDataGenerate( true );
+      setCopy( true );
+      setSplit( true );
+      setFullTupleGroup( true );
+      setStaggeredSort( true );
       setCountSort( true );
+      setSelfMultiJoin( true );
       setMultiJoin( true );
       setPipeline( true );
       setDataConsume( true );
