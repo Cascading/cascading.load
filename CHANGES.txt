@@ -1,5 +1,10 @@
 Load change log
 
+3.0.0
+- Update to Cascading 3.0.0
+- Support for Apache Tez
+
+
 2.7.0
 
 - update to Cascading 2.7.0
