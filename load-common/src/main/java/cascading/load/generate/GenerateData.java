@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.Properties;
 
 import cascading.flow.Flow;
+import cascading.flow.FlowRuntimeProps;
+import cascading.load.Options;
+import cascading.load.common.Load;
+import cascading.load.util.Util;
 import cascading.operation.regex.RegexSplitter;
 import cascading.pipe.Each;
 import cascading.pipe.Pipe;
@@ -19,9 +23,6 @@ import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
 import cascading.tuple.Tuple;
-import cascading.load.Options;
-import cascading.load.common.Load;
-import cascading.load.util.Util;
 
 /** Class GenerateData creates a test corpus of random words. */
 public class GenerateData extends Load
@@ -38,13 +39,17 @@ public class GenerateData extends Load
     {
     dictionaryPath = writeDictionaryTuples();
 
-    Tap source = platform.newTap( platform.newTextLine( new Fields( "line" ) ), dictionaryPath );
-    Tap sink = platform.newTap( platform.newTextLine( new Fields( "line" ) ), options.getInputRoot(), SinkMode.REPLACE );
+    Tap source = platform.newTap( platform.newTextLine( new Fields( "line", String.class ) ), dictionaryPath );
+    Tap sink = platform.newTap( platform.newTextLine( new Fields( "line", String.class ) ), options.getInputRoot(), SinkMode.REPLACE );
 
     Pipe pipe = new Pipe( "load-generator" );
 
     pipe = new Each( pipe, new Fields( "line" ), new RegexSplitter( "\t" ) );
-    pipe = new Each( pipe, new TupleGenerator( options, new Fields( "line" ) ) );
+    pipe = new Each( pipe, new TupleGenerator( options, new Fields( "line", String.class ) ) );
+
+    // force off, else data generation is broken across platforms
+    // the assumption on calculating the data is based on num of dicstionary files = num splits
+    properties.setProperty( FlowRuntimeProps.COMBINE_SPLITS, "false" );
 
     return platform.newFlowConnector( properties ).connect( "generate-data", source, sink, pipe );
     }

@@ -22,9 +22,6 @@ import org.apache.tools.ant.filters.ReplaceTokens
 
 import java.text.SimpleDateFormat
 
-apply plugin: 'idea'
-apply plugin: 'eclipse'
-
 apply from: 'etc/version.gradle'
 apply from: 'etc/properties.gradle'
 apply from: 'etc/s3Upload.gradle'
@@ -39,6 +36,13 @@ buildscript {
     classpath 'com.netflix.nebula:gradle-extra-configurations-plugin:2.2.1'
     classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.1'
   }
+}
+
+allprojects {
+  apply plugin: 'idea'
+  apply plugin: 'eclipse'
+
+  apply plugin: 'provided-base'
 }
 
 repositories {
@@ -63,9 +67,6 @@ ext.finalTarName = "${tarBaseName}.tgz"
 subprojects {
   apply plugin: 'java'
   apply plugin: 'maven'
-  apply plugin: 'idea'
-  apply plugin: 'eclipse'
-  apply plugin: 'provided-base'
   apply plugin: 'com.github.johnrengelman.shadow'
 
   apply from: "${rootDir}/etc/testing.gradle"

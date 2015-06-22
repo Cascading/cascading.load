@@ -19,6 +19,7 @@ import cascading.cascade.CascadeConnector;
 import cascading.cascade.CascadeProps;
 import cascading.flow.Flow;
 import cascading.flow.FlowConnectorProps;
+import cascading.flow.FlowRuntimeProps;
 import cascading.load.consume.ConsumeData;
 import cascading.load.countsort.CountSort;
 import cascading.load.countsort.FullTupleGroup;
@@ -250,6 +251,9 @@ public class Main
       AppProps.addApplicationTag( properties, options.getTags() );
 
     AppProps.addApplicationFramework( properties, "Load" );
+
+    // default is false for apples/apples comparisons when generating data etc
+    properties.put( FlowRuntimeProps.COMBINE_SPLITS, options.isCombineSplits() );
 
     if( options.isDebugLogging() )
       {

@@ -11,6 +11,8 @@ import java.util.Properties;
 
 import cascading.cascade.Cascades;
 import cascading.flow.Flow;
+import cascading.load.Options;
+import cascading.load.common.Load;
 import cascading.operation.filter.Sample;
 import cascading.operation.regex.RegexSplitGenerator;
 import cascading.operation.regex.RegexSplitter;
@@ -22,8 +24,6 @@ import cascading.pipe.joiner.RightJoin;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
-import cascading.load.Options;
-import cascading.load.common.Load;
 
 /**
  * Class OnlyRightJoin uses the test corpus and performs both a split of of all the words into tuples and uniques all the
@@ -39,12 +39,12 @@ public class OnlyRightJoin extends Load
   @Override
   public Flow createFlow() throws Exception
     {
-    Tap source = platform.newTap( platform.newTextLine( new Fields( "line" ) ), getInputPaths()[ 0 ] );
+    Tap source = platform.newTap( platform.newTextLine( new Fields( "line", String.class ) ), getInputPaths()[ 0 ] );
     Tap rightSink = platform.newTap( platform.newTextLine(), getOutputPaths()[ 0 ], SinkMode.REPLACE );
 
     Pipe uniques = new Pipe( "unique" );
 
-    uniques = new Each( uniques, new Fields( "line" ), new RegexSplitGenerator( new Fields( "word" ), "\\s" ) );
+    uniques = new Each( uniques, new Fields( "line" ), new RegexSplitGenerator( new Fields( "word", String.class ), "\\s" ) );
 
     uniques = new Unique( uniques, new Fields( "word" ) );
 
@@ -52,7 +52,7 @@ public class OnlyRightJoin extends Load
 
     Pipe fielded = new Pipe( "fielded" );
 
-    fielded = new Each( fielded, new Fields( "line" ), new RegexSplitter( Fields.size( options.getDataMaxWords() ), "\\s" ) );
+    fielded = new Each( fielded, new Fields( "line" ), new RegexSplitter( Fields.size( options.getDataMaxWords(), String.class ), "\\s" ) );
 
     fielded = new Each( fielded, new Sample( 0, 0.95 ) ); // need to drop some values
 

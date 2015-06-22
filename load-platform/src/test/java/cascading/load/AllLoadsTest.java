@@ -202,16 +202,17 @@ public class AllLoadsTest extends LoadTestCase
       "-O", output + "output",
 
       "-DH", "yarn.timeline-service.enabled=false",
+      "-DH", "cascading.serialization.types.required=true",
 
       "-g",
       "-gf", "1",
       "-gs", "1",
 
-      "-c",
+      "--count-sort",
+//
+      "--multi-join",
 
-      "-m",
-
-      "-p",
+      "--pipeline",
 
       "-SLS"
     };

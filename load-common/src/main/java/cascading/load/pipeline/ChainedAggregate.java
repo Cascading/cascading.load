@@ -9,6 +9,8 @@ package cascading.load.pipeline;
 import java.util.Properties;
 
 import cascading.flow.Flow;
+import cascading.load.Options;
+import cascading.load.common.Load;
 import cascading.operation.Function;
 import cascading.operation.aggregator.Sum;
 import cascading.operation.expression.ExpressionFunction;
@@ -19,9 +21,6 @@ import cascading.pipe.Pipe;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
-import cascading.load.Options;
-import cascading.load.common.Load;
-
 
 /**
  * Class ChainedAggregate sets up a simple pipeline of operations to test the hand off between operations
@@ -36,12 +35,12 @@ public class ChainedAggregate extends Load
   @Override
   public Flow createFlow() throws Exception
     {
-    Tap source = platform.newTap( platform.newTextLine( new Fields( "line" ) ), getInputPaths()[ 0 ] );
+    Tap source = platform.newTap( platform.newTextLine( new Fields( "line", String.class ) ), getInputPaths()[ 0 ] );
     Tap sink = platform.newTap( platform.newTextLine(), getOutputPaths()[ 0 ], SinkMode.REPLACE );
 
     Pipe pipe = new Pipe( "chainedaggregate" );
 
-    Function function = new ExpressionFunction( new Fields( "count" ), "line.split( \"\\\\s\").length", String.class );
+    Function function = new ExpressionFunction( new Fields( "count", String.class ), "line.split( \"\\\\s\").length", String.class );
     pipe = new Each( pipe, new Fields( "line" ), function, Fields.ALL );
 
     int modulo = 1000000;
@@ -49,12 +48,12 @@ public class ChainedAggregate extends Load
     if( options.getHashModulo() != -1 )
       modulo = options.getHashModulo();
 
-    pipe = new Each( pipe, new Fields( "line" ), new ExpressionFunction( new Fields( "hash" ), "line.hashCode() % " + modulo, String.class ), Fields.ALL ); // want some collisions
+    pipe = new Each( pipe, new Fields( "line" ), new ExpressionFunction( new Fields( "hash", Long.TYPE ), "line.hashCode() % " + modulo, String.class ), Fields.ALL ); // want some collisions
 
     pipe = new GroupBy( pipe, new Fields( "hash" ) );
 
     for( int i = 0; i < 50; i++ )
-      pipe = new Every( pipe, new Fields( "count" ), new Sum( new Fields( "sum" + ( i + 1 ) ) ) );
+      pipe = new Every( pipe, new Fields( "count" ), new Sum( new Fields( "sum" + ( i + 1 ), Long.TYPE ) ) );
 
     return platform.newFlowConnector( properties ).connect( "chainedaggregate", source, sink, pipe );
     }

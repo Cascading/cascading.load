@@ -194,6 +194,7 @@ public class Options
   int blockSizeMB = 64;
   int numDefaultMappers = -1;
   int numDefaultReducers = -1;
+  boolean combineSplits = false;
   float percentMaxMappers = 0;
   float percentMaxReducers = 0;
   boolean mapSpecExec = false;
@@ -275,6 +276,7 @@ public class Options
     new OptionGlyph( asList( "-BS" ), "setBlockSizeMB", int.class, false, false, "default block size" );
     new OptionGlyph( asList( "-NM" ), "setNumDefaultMappers", int.class, false, false, "default num mappers" );
     new OptionGlyph( asList( "-NR" ), "setNumDefaultReducers", int.class, false, false, "default num reducers" );
+    new OptionGlyph( asList( "-CS" ), "setCombineSplits", boolean.class, false, false, "enable split combining for small files" );
     new OptionGlyph( asList( "-PM" ), "setPercentMaxMappers", float.class, false, false, "percent of max mappers" );
     new OptionGlyph( asList( "-PR" ), "setPercentMaxReducers", float.class, false, false, "percent of max reducers" );
     new OptionGlyph( asList( "-EM" ), "setMapSpecExec", null, false, false, "enable map side speculative execution" );
@@ -510,6 +512,16 @@ public class Options
   public void setNumDefaultReducers( int numDefaultReducers )
     {
     this.numDefaultReducers = numDefaultReducers;
+    }
+
+  public boolean isCombineSplits()
+    {
+    return combineSplits;
+    }
+
+  public void setCombineSplits( boolean combineSplits )
+    {
+    this.combineSplits = combineSplits;
     }
 
   public float getPercentMaxMappers()

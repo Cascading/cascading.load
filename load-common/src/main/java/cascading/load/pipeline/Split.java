@@ -29,7 +29,7 @@ public class Split extends Load
   @Override
   public Flow createFlow() throws Exception
     {
-    Tap source = platform.newTap( platform.newTextLine( new Fields( "line" ) ), getInputPaths()[ 0 ] );
+    Tap source = platform.newTap( platform.newTextLine( new Fields( "line", String.class ) ), getInputPaths()[ 0 ] );
     Tap lhs = platform.newTap( platform.newTextLine(), getOutputPaths()[ 0 ], SinkMode.REPLACE );
     Tap rhs = platform.newTap( platform.newTextLine(), getOutputPaths()[ 1 ], SinkMode.REPLACE );
 

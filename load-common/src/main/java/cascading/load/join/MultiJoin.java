@@ -44,8 +44,8 @@ public class MultiJoin extends Load
   @Override
   public Flow createFlow() throws Exception
     {
-    Tap lhsSource = platform.newTap( platform.newTextLine( new Fields( "line" ) ), getInputPaths()[ 0 ] );
-    Tap rhsSource = platform.newTap( platform.newTextLine( new Fields( "line" ) ), getInputPaths()[ 1 ] );
+    Tap lhsSource = platform.newTap( platform.newTextLine( new Fields( "line", String.class ) ), getInputPaths()[ 0 ] );
+    Tap rhsSource = platform.newTap( platform.newTextLine( new Fields( "line", String.class ) ), getInputPaths()[ 1 ] );
 
     Tap innerSink = platform.newTap( platform.newTextLine(), getOutputPaths()[ 0 ], SinkMode.REPLACE );
     Tap outerSink = platform.newTap( platform.newTextLine(), getOutputPaths()[ 1 ], SinkMode.REPLACE );
@@ -54,7 +54,7 @@ public class MultiJoin extends Load
 
     Pipe uniques = new Pipe( "unique" );
 
-    uniques = new Each( uniques, new Fields( "line" ), new RegexSplitGenerator( new Fields( "word" ), "\\s" ) );
+    uniques = new Each( uniques, new Fields( "line" ), new RegexSplitGenerator( new Fields( "word", String.class ), "\\s" ) );
 
     uniques = new GroupBy( uniques, new Fields( "word" ) );
 
@@ -64,7 +64,7 @@ public class MultiJoin extends Load
 
     Pipe fielded = new Pipe( "fielded" );
 
-    fielded = new Each( fielded, new Fields( "line" ), new RegexSplitter( Fields.size( options.getDataMaxWords() ), "\\s" ) );
+    fielded = new Each( fielded, new Fields( "line" ), new RegexSplitter( Fields.size( options.getDataMaxWords(), String.class ), "\\s" ) );
 
     fielded = new Each( fielded, new Sample( 0, 0.95 ) ); // need to drop some values
 

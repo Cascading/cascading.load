@@ -29,9 +29,8 @@ dependencies {
   provided group: 'org.apache.hadoop', name: 'hadoop-hdfs', version: hadoop2Version
   provided group: 'org.apache.tez', name: 'tez-api', version: tezVersion
   provided group: 'org.apache.tez', name: 'tez-dag', version: tezVersion
-  provided group: 'org.apache.tez', name: 'tez-yarn-timeline-history-with-acls', version: tezVersion 
+  provided group: 'org.apache.tez', name: 'tez-yarn-timeline-history-with-acls', version: tezVersion
   provided group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
-
 
   testCompile project( path: ':load-platform', configuration: 'testArtifacts' )
   testCompile group: 'org.apache.hadoop', name: 'hadoop-mapreduce-client-core', version: hadoop2Version
@@ -51,7 +50,7 @@ configurations.all {
   resolutionStrategy {
     force 'com.google.guava:guava:11.0.2'
 
-    eachDependency { def details ->
+    eachDependency {def details ->
       if( details.requested.group == 'org.apache.hadoop' )
         details.useVersion hadoop2Version
     }

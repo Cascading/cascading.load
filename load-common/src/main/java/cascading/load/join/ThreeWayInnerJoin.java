@@ -39,14 +39,14 @@ public class ThreeWayInnerJoin extends Load
   @Override
   public Flow createFlow() throws Exception
     {
-    Tap source = platform.newTap( platform.newTextLine( new Fields( "line" ) ), getInputPaths()[ 0 ] );
+    Tap source = platform.newTap( platform.newTextLine( new Fields( "line", String.class ) ), getInputPaths()[ 0 ] );
     Tap innerSink = platform.newTap( platform.newTextLine(), getOutputPaths()[ 0 ], SinkMode.REPLACE );
 
     int dataMaxWords = options.getDataMaxWords();
 
     Pipe uniques = new Pipe( "unique" );
 
-    uniques = new Each( uniques, new Fields( "line" ), new RegexSplitGenerator( new Fields( "word" ), "\\s" ) );
+    uniques = new Each( uniques, new Fields( "line" ), new RegexSplitGenerator( new Fields( "word", String.class ), "\\s" ) );
 
     uniques = new Unique( uniques, new Fields( "word" ) );
 
@@ -54,20 +54,20 @@ public class ThreeWayInnerJoin extends Load
 
     Pipe lhs = new Pipe( "lhs" );
 
-    lhs = new Each( lhs, new Fields( "line" ), new RegexSplitter( Fields.size( dataMaxWords ), "\\s" ) );
+    lhs = new Each( lhs, new Fields( "line" ), new RegexSplitter( Fields.size( dataMaxWords, String.class ), "\\s" ) );
 
     lhs = new Each( lhs, new Sample( 0, 0.95 ) ); // need to drop some values
 
     Pipe rhs = new Pipe( "rhs" );
 
-    rhs = new Each( rhs, new Fields( "line" ), new RegexSplitter( Fields.size( dataMaxWords ), "\\s" ) );
+    rhs = new Each( rhs, new Fields( "line" ), new RegexSplitter( Fields.size( dataMaxWords, String.class ), "\\s" ) );
 
     rhs = new Each( rhs, new Sample( 0, 0.95 ) ); // need to drop some values
 
     Pipe[] pipes = {lhs, uniques, rhs};
     Fields[] fields = {new Fields( 0 ), new Fields( "word" ), new Fields( 0 )};
 
-    Pipe inner = new CoGroup( "inner", pipes, fields, Fields.size( dataMaxWords * 2 + 1 ), new InnerJoin() );
+    Pipe inner = new CoGroup( "inner", pipes, fields, Fields.size( dataMaxWords * 2 + 1, String.class ), new InnerJoin() );
 
     Pipe[] heads = Pipe.pipes( uniques, lhs, rhs );
     Map<String, Tap> sources = Cascades.tapsMap( heads, Tap.taps( source, source, source ) );

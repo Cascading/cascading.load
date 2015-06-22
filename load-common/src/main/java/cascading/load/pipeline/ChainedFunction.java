@@ -9,6 +9,8 @@ package cascading.load.pipeline;
 import java.util.Properties;
 
 import cascading.flow.Flow;
+import cascading.load.Options;
+import cascading.load.common.Load;
 import cascading.operation.Function;
 import cascading.operation.Identity;
 import cascading.operation.expression.ExpressionFunction;
@@ -17,9 +19,6 @@ import cascading.pipe.Pipe;
 import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Fields;
-import cascading.load.Options;
-import cascading.load.common.Load;
-
 
 /**
  * Class ChainedFunction sets up a simple pipeline of operations to test the hand off between operations
@@ -36,23 +35,23 @@ public class ChainedFunction extends Load
   @Override
   public Flow createFlow() throws Exception
     {
-    Tap source = platform.newTap( platform.newTextLine( new Fields( "line" ) ), getInputPaths()[ 0 ] );
+    Tap source = platform.newTap( platform.newTextLine( new Fields( "line", String.class ) ), getInputPaths()[ 0 ] );
     Tap sink = platform.newTap( platform.newTextLine(), getOutputPaths()[ 0 ], SinkMode.REPLACE );
 
     Pipe pipe = new Pipe( "chainedfunction" );
 
-    Function function = new ExpressionFunction( new Fields( "count" ), "line.split( \"\\\\s\").length", String.class );
+    Function function = new ExpressionFunction( new Fields( "count", Long.TYPE ), "line.split( \"\\\\s\").length", String.class );
     pipe = new Each( pipe, new Fields( "line" ), function, Fields.ALL );
 
     for( int i = 0; i < 50; i++ )
       {
-      pipe = new Each( pipe, new Fields( "line" ), new Identity( new Fields( 0 ) ), Fields.ALL );
-      pipe = new Each( pipe, new Fields( "count" ), new Identity( new Fields( 0 ) ), Fields.ALL );
+      pipe = new Each( pipe, new Fields( "line" ), new Identity( new Fields( String.class ) ), Fields.ALL );
+      pipe = new Each( pipe, new Fields( "count" ), new Identity( new Fields( Long.TYPE ) ), Fields.ALL );
       pipe = new Each( pipe, new Fields( "line" ), new Identity(), Fields.REPLACE );
       pipe = new Each( pipe, new Fields( "count" ), new Identity(), Fields.REPLACE );
       pipe = new Each( pipe, new Fields( "line", "count" ), new Identity() );
-      pipe = new Each( pipe, new Fields( "line", "count" ), new Identity( new Fields( "line2", "count2" ) ), new Fields( "line", "count2" ) );
-      pipe = new Each( pipe, new Fields( "count2" ), new Identity( new Fields( "count" ) ), new Fields( "line", "count" ) );
+      pipe = new Each( pipe, new Fields( "line", "count" ), new Identity( new Fields( "line2", "count2" ).applyTypes( String.class, Long.TYPE ) ), new Fields( "line", "count2" ) );
+      pipe = new Each( pipe, new Fields( "count2" ), new Identity( new Fields( "count", Long.TYPE ) ), new Fields( "line", "count" ) );
       }
 
     return platform.newFlowConnector( properties ).connect( "chainedfunction", source, sink, pipe );
