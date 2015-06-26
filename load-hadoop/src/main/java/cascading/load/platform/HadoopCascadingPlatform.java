@@ -26,6 +26,8 @@ import java.util.Map;
 import cascading.flow.FlowConnector;
 import cascading.flow.hadoop.HadoopFlowConnector;
 import cascading.stats.CascadingStats;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapred.JobConf;
 
 /**
  * Implementation of CascadeLoadPlatform for hadoop.

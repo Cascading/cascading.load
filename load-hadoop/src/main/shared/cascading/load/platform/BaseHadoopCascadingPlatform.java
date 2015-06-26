@@ -38,7 +38,6 @@ import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntryCollector;
 import cascading.tuple.collect.SpillableProps;
 import cascading.util.Util;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobConf;
@@ -144,7 +143,7 @@ public abstract class BaseHadoopCascadingPlatform implements CascadingLoadPlatfo
     properties.setProperty( "dfs.blocksize", Long.toString( options.getBlockSizeMB() * 1024 * 1024 ) );
 
     // hadoop 1.x uses the same directory for all jobs in local mode, causing random failures when we allow parallel job execution.
-    if( cascading.flow.hadoop.util.HadoopUtil.isLocal( new Configuration() ))
+    if( cascading.flow.hadoop.util.HadoopUtil.isLocal( new JobConf() ) )
       {
       properties.setProperty( FlowProps.MAX_CONCURRENT_STEPS, "1" );
       properties.setProperty( "mapred.local.dir", String.format( "/tmp/hadoop/%s/mapred/local", java.util.UUID.randomUUID().toString() ) );
