@@ -35,21 +35,23 @@ public abstract class BreakingOperation<T> extends BaseOperation<T> implements O
   protected long startTime = 0L;
   protected boolean useBreakAfterTime = false;
 
-  protected void setEventCount(long eventCount) {
-  this.eventCount = eventCount;
-  }
+  protected void setEventCount( long eventCount )
+    {
+    this.eventCount = eventCount;
+    }
 
-  protected void incrementEventCount() {
-    eventCount +=1;
-  }
+  protected void incrementEventCount()
+    {
+    eventCount += 1;
+    }
 
-  protected boolean needsToBreak() {
-  if (useBreakAfterTime)
-    return (System.currentTimeMillis() - breakAfterTime > startTime);
-  else
-    return eventCount > breakAfterEvents;
-  }
-
+  protected boolean needsToBreak()
+    {
+    if( useBreakAfterTime )
+      return ( System.currentTimeMillis() - breakAfterTime > startTime );
+    else
+      return eventCount > breakAfterEvents;
+    }
 
   @Override
   public boolean equals( Object object )

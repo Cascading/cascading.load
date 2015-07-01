@@ -244,6 +244,7 @@ public class Options
   boolean threeWayJoin;
 
   boolean pathologicalInnerJoin;
+  boolean pathologicalOutOfMemory;
 
   boolean copy;
   boolean split;
@@ -322,6 +323,9 @@ public class Options
     new OptionGlyph( asList( "-pm", "--pipeline-hash-modulo" ), "setHashModulo", int.class, false, false, "hash modulo for managing key distribution" );
     new OptionGlyph( asList( "-ca", "--chained-aggregate" ), "setChainedAggregate", null, false, false, "run chained aggregate load" );
     new OptionGlyph( asList( "-cf", "--chained-function" ), "setChainedFunction", null, false, false, "run chained function load" );
+
+    new OptionGlyph( asList( "-pom", "--pathological-out-of-memory" ), "setPathologicalOutOfMemory", null, false, false, "run pathological OOME test" );
+
     new OptionGlyph( asList( "-wd", "--write-dot" ), "setWriteDotFile", null, false, false, "write DOT file" );
     new OptionGlyph( asList( "-wt", "--write-trace" ), "setWriteTraceFiles", null, false, false, "write planner trace files" );
     new OptionGlyph( asList( "-an", "--app-name" ), "setAppName", String.class, false, false, "set the application name" );
@@ -975,6 +979,16 @@ public class Options
   public boolean isPathologicalInnerJoin()
     {
     return pathologicalInnerJoin;
+    }
+
+  public boolean isPathologicalOutOfMemory()
+    {
+    return pathologicalOutOfMemory;
+    }
+
+  public void setPathologicalOutOfMemory( boolean pathologicalOutOfMemory )
+    {
+    this.pathologicalOutOfMemory = pathologicalOutOfMemory;
     }
 
   public void setBreakingLoads( boolean breakingLoads )

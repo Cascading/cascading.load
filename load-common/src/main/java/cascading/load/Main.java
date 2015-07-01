@@ -32,6 +32,7 @@ import cascading.load.join.OnlyRightJoin;
 import cascading.load.join.SelfMultiJoin;
 import cascading.load.join.ThreeWayInnerJoin;
 import cascading.load.pathological.BreakingLoad;
+import cascading.load.pathological.CrashOnMemory;
 import cascading.load.pathological.PathologicalOnlyInnerJoin;
 import cascading.load.pipeline.ChainedAggregate;
 import cascading.load.pipeline.ChainedFunction;
@@ -136,6 +137,9 @@ public class Main
 
     if( options.isPathologicalInnerJoin() )
       flows.add( new PathologicalOnlyInnerJoin( options, getDefaultProperties() ).createFlow() );
+
+    if( options.isPathologicalOutOfMemory() )
+      flows.add( new CrashOnMemory( options, getDefaultProperties() ).createFlow() );
 
     if( options.isBreakingLoads() )
       for( BreakingLoad breakingLoad : BreakingLoad.breakingLoads( options, getDefaultProperties() ) )

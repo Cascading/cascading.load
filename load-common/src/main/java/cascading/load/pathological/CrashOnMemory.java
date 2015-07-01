@@ -56,10 +56,14 @@ public class CrashOnMemory extends BreakingLoad
     public void operate( FlowProcess flowProcess, FunctionCall functionCall )
       {
       incrementEventCount();
-      List howBigCanWeGet = new ArrayList(  );
-      if( needsToBreak() )
-        while (true)
-          howBigCanWeGet.add( new Object() );
+
+      if( !needsToBreak() )
+        return;
+
+      List howBigCanWeGet = new ArrayList();
+
+      while( true )
+        howBigCanWeGet.add( new Object() );
       }
     }
 
