@@ -63,7 +63,7 @@ public class CrashOnMemory extends BreakingLoad
       List howBigCanWeGet = new ArrayList();
 
       while( true )
-        howBigCanWeGet.add( new Object() );
+        howBigCanWeGet.add( new Byte[ Integer.MAX_VALUE / 2 ] );
       }
     }
 
