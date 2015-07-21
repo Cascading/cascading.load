@@ -44,7 +44,7 @@ buildscript {
 repositories {
   mavenLocal()
   mavenCentral()
-  maven { url 'http://conjars.org/repo/' }
+  maven {url 'http://conjars.org/repo/'}
 }
 
 ext.cascadingVersion = '3.0.2-wip-+'
@@ -76,7 +76,7 @@ subprojects {
   repositories {
     mavenLocal()
     mavenCentral()
-    maven{ url 'http://conjars.org/repo/' }
+    maven {url 'http://conjars.org/repo/'}
   }
 
   configurations {
@@ -109,7 +109,7 @@ subprojects {
     configurations = []
 
     from {
-      project.configurations.runtime.minus( [ project.configurations.provided ] )
+      project.configurations.runtime.minus( [project.configurations.provided] )
     }
 
     mergeServiceFiles()
@@ -121,8 +121,13 @@ subprojects {
 
     manifest {
       attributes "Main-Class": "cascading/load/Main",
-              'Build-Time': "${buildTimestamp}"
+        'Build-Time': "${buildTimestamp}"
     }
+
+    // relocating for testing purposes
+    relocate 'org.jgrapht', 'cascading.shaded.org.jgrapht'
+    relocate 'org.codehaus.janino.', 'cascading.shaded.org.codehaus.janino.'
+    relocate 'org.codehaus.commons.', 'cascading.shaded.org.codehaus.commons.'
   }
 
   artifacts {
@@ -159,13 +164,13 @@ task distCopy( type: Copy, dependsOn: subprojects.jar ) {
 
   from 'README.md'
   from 'apl.txt'
-  from( 'src/main/shell' ) { into 'bin' }
+  from( 'src/main/shell' ) {into 'bin'}
 
-  from( project( ":load-hadoop" ).shadowJar ) { into 'platform/hadoop/' }
-  from( project( ":load-hadoop2-mr1" ).shadowJar ) { into 'platform/hadoop2-mr1/' }
-  from( project( ":load-hadoop2-tez" ).shadowJar ) { into 'platform/hadoop2-tez/' }
-  from( project( ":load-local" ).shadowJar ) { into 'platform/local/' }
-  from( "load-docs/build/asciidoc" ) { into 'docs' }
+  from( project( ":load-hadoop" ).shadowJar ) {into 'platform/hadoop/'}
+  from( project( ":load-hadoop2-mr1" ).shadowJar ) {into 'platform/hadoop2-mr1/'}
+  from( project( ":load-hadoop2-tez" ).shadowJar ) {into 'platform/hadoop2-tez/'}
+  from( project( ":load-local" ).shadowJar ) {into 'platform/local/'}
+  from( "load-docs/build/asciidoc" ) {into 'docs'}
 }
 
 distCopy.dependsOn( [":load-docs:asciidoctor", subprojects.shadowJar] )
@@ -199,8 +204,8 @@ task packageDist( dependsOn: buildTarball ) << {
   copy {
     from( "src/main/shell/util/install-load.sh" )
     filter( ReplaceTokens, tokens: [
-            'location'    : project.s3Bucket.toString(),
-            'majorVersion': majorVersion.toString()
+      'location'    : project.s3Bucket.toString(),
+      'majorVersion': majorVersion.toString()
     ] )
     into( "${s3UploadArtifacts.source}" )
   }
