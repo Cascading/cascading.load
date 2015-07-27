@@ -49,6 +49,7 @@ import cascading.tap.SinkMode;
 import cascading.tap.Tap;
 import cascading.tuple.Tuple;
 import cascading.tuple.TupleEntryCollector;
+import cascading.util.Util;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -57,7 +58,7 @@ import org.apache.log4j.Logger;
  */
 public class Main
   {
-  private static final Logger LOG = Logger.getLogger( Options.class );
+  private static final Logger LOG = Logger.getLogger( Main.class );
 
   private Options options;
   private CascadingLoadPlatform platform;
@@ -65,7 +66,25 @@ public class Main
 
   public static void main( String[] args ) throws Exception
     {
-    new Main( args ).execute();
+    Main main = new Main( args );
+
+    boolean isDaemon = main.getOptions().isDaemon();
+    int waitMin = main.getOptions().getDaemonWaitMin();
+
+    while( true )
+      {
+      if( isDaemon )
+        LOG.info( "running in daemon mode, with wait period in min: " + waitMin );
+
+      main.execute();
+
+      if( !isDaemon )
+        break;
+
+      LOG.info( "waiting " + waitMin + " minutes before next execution" );
+
+      Util.safeSleep( waitMin * 60 * 1000 );
+      }
     }
 
   public Main( String[] args ) throws IOException
@@ -75,6 +94,11 @@ public class Main
     initOptions( args, options );
 
     platform = new PlatformLoader().loadPlatform( options.getPlatformName() );
+    }
+
+  public Options getOptions()
+    {
+    return options;
     }
 
   public boolean execute() throws Exception

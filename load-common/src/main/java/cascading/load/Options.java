@@ -255,6 +255,8 @@ public class Options
   boolean writeDotFile = false;
   boolean writeTraceFiles = false;
   private String platformName;
+  private boolean isDaemon = false;
+  private int daemonWaitMin = 1;
 
   OptionGlyph helpOption;
   OptionGlyph markOption;
@@ -266,6 +268,8 @@ public class Options
     this.markOption = new OptionGlyph( asList( "--markdown" ), "generateMarkdown", null, false, false, "generate help text as GitHub Flavored Markdown" );
 
     new OptionGlyph( asList( "-pf", "--platform" ), "setPlatformName", String.class, false, false, "set platform" );
+    new OptionGlyph( asList( "-d", "--daemon" ), "enableDaemon", null, false, false, "enable as a long running process" );
+    new OptionGlyph( asList( "-dw", "--daemon-wait" ), "setDaemonWait", Integer.class, false, false, "wait period between executions" );
 
     new OptionGlyph( asList( "-ALL" ), "setRunAllLoads", null, false, false, "run all available loads (not intended to produce errors)" );
     new OptionGlyph( asList( "-dt", "--destructive-testing" ), "setBreakingLoads", null, false, false, "run loads that are intended to produce errors" );
@@ -1093,7 +1097,26 @@ public class Options
     return platformName;
     }
 
-  ////////////////////////////////////////
+  public boolean isDaemon()
+    {
+    return isDaemon;
+    }
+
+  public void enableDaemon( boolean isDaemon )
+    {
+    this.isDaemon = isDaemon;
+    }
+
+  public int getDaemonWaitMin()
+    {
+    return daemonWaitMin;
+    }
+
+  public void setDaemonWaitMin( int daemonWaitMin )
+    {
+    this.daemonWaitMin = daemonWaitMin;
+    }
+////////////////////////////////////////
 
   public void prepare()
     {
