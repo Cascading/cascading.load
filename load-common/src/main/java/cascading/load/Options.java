@@ -245,6 +245,7 @@ public class Options
 
   boolean pathologicalInnerJoin;
   boolean pathologicalOutOfMemory;
+  boolean pathologicalFilter;
 
   boolean copy;
   boolean split;
@@ -329,6 +330,7 @@ public class Options
     new OptionGlyph( asList( "-cf", "--chained-function" ), "setChainedFunction", null, false, false, "run chained function load" );
 
     new OptionGlyph( asList( "-pom", "--pathological-out-of-memory" ), "setPathologicalOutOfMemory", null, false, false, "run pathological OOME test" );
+    new OptionGlyph( asList( "-ppf", "--pathological-filter" ), "setPathologicalFilter", null, false, false, "run pathological test that fails in a filter" );
 
     new OptionGlyph( asList( "-wd", "--write-dot" ), "setWriteDotFile", null, false, false, "write DOT file" );
     new OptionGlyph( asList( "-wt", "--write-trace" ), "setWriteTraceFiles", null, false, false, "write planner trace files" );
@@ -993,6 +995,16 @@ public class Options
   public void setPathologicalOutOfMemory( boolean pathologicalOutOfMemory )
     {
     this.pathologicalOutOfMemory = pathologicalOutOfMemory;
+    }
+
+  public boolean isPathologicalFilter()
+    {
+    return pathologicalFilter;
+    }
+
+  public void setPathologicalFilter( boolean pathologicalFilter )
+    {
+    this.pathologicalFilter = pathologicalFilter;
     }
 
   public void setBreakingLoads( boolean breakingLoads )
