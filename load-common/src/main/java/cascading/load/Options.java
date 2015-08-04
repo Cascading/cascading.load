@@ -241,6 +241,8 @@ public class Options
   int hashModulo = -1;
   boolean writeDotFile = false;
   private String platformName;
+  private boolean isDaemon = false;
+  private int daemonWaitMin = 1;
 
 
   OptionGlyph helpOption;
@@ -311,6 +313,8 @@ public class Options
     glyph = new OptionGlyph( asList( "-an", "--app-name" ), "setAppName", String.class, false, false, "set the application name" );
     glyph = new OptionGlyph( asList( "-tn", "--tags" ), "setTags", String.class, false, false, "set the application tags, comma separated" );
     glyph = new OptionGlyph( asList( "-pf", "--platform" ), "setPlatformName", String.class, false, false, "set platform" );
+    glyph = new OptionGlyph( asList( "-d", "--daemon" ), "enableDaemon", null, false, false, "enable as a long running process" );
+    glyph = new OptionGlyph( asList( "-dw", "--daemon-wait" ), "setDaemonWait", Integer.class, false, false, "wait period between executions" );
     }
 
   public void parseArgs( String[] args ) throws Exception
@@ -993,7 +997,26 @@ public class Options
     return platformName;
     }
 
-  ////////////////////////////////////////
+  public boolean isDaemon()
+    {
+    return isDaemon;
+    }
+
+  public void enableDaemon( boolean isDaemon )
+    {
+    this.isDaemon = isDaemon;
+    }
+
+  public int getDaemonWaitMin()
+    {
+    return daemonWaitMin;
+    }
+
+  public void setDaemonWaitMin( int daemonWaitMin )
+    {
+    this.daemonWaitMin = daemonWaitMin;
+    }
+////////////////////////////////////////
 
   public void prepare()
     {
