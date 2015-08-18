@@ -23,5 +23,6 @@ dependencies {
   compile( group: 'net.sf.jopt-simple', name: 'jopt-simple', version: '4.3' )
   compile( group: 'log4j', name: 'log4j', version: '1.2.16' )
   compile( group: 'cascading', name: 'cascading-core', version: cascadingVersion )
+  compile( group: 'cascading', name: 'cascading-expression', version: cascadingVersion )
 
 }
