@@ -29,6 +29,7 @@ import cascading.flow.Flow;
 import cascading.load.countsort.CountSort;
 import cascading.load.generate.GenerateData;
 import cascading.load.join.MultiJoin;
+import cascading.load.pipeline.Copy;
 import cascading.load.pipeline.Pipeline;
 import org.junit.Before;
 import org.junit.Test;
@@ -87,6 +88,12 @@ public class AllLoadsTest extends LoadTestCase
     Flow countSortFlow = countSort.createFlow();
 
     countSortFlow.complete();
+
+    Copy copy = new Copy( options, getProperties() );
+
+    Flow copyFlow = copy.createFlow();
+
+    copyFlow.complete();;
 
     outputPath = new File( countSort.getOutputPaths()[ 0 ] );
     assertTrue( outputPath.exists() );
