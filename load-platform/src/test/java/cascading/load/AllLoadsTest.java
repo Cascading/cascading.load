@@ -255,7 +255,7 @@ public class AllLoadsTest extends LoadTestCase
     if( platformName.equals( "local" ) )
       assertEquals( 13, lineNo );
     else if( platformName.equals( "hadoop2-tez" ) )
-      assertEquals( 26, lineNo );
+      assertEquals( 27, lineNo );
     else if( platformName.equals( "hadoop2-mr1" ) || platformName.equals( "hadoop" ) )
       assertEquals( 36, lineNo );
     }
